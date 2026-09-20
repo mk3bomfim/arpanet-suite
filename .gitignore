@@ -1,0 +1,21 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Node modules
+node_modules/
+npm-debug.log*
+
+# Android build cache
+android/android/app/build/
+android/android/.gradle/
+android/android/build/
+android/node_modules/
+.gradle/
+build/
+
+# IDE
+.idea/
+.vscode/

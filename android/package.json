@@ -1,0 +1,18 @@
+{
+  "name": "arpanet-suite-mobile",
+  "version": "2.0.0",
+  "description": "Arpanet Suite Mobile Android Wrapper",
+  "scripts": {
+    "cap:sync": "cap sync android",
+    "cap:open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  },
+  "devDependencies": {
+    "@ionic/utils-fs": "^3.1.7",
+    "fs-extra": "^11.4.0"
+  }
+}

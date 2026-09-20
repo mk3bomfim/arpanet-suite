@@ -1,0 +1,711 @@
+/* ── Arpanet Suite — Pure Monochrome Vector UI with Fluid Curves & Micro-Animations ── */
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Strict Monochrome Dark */
+  --bg: #050505;
+  --fg: #ffffff;
+  --surface: #0f1012;
+  --surface-alt: #17181c;
+  --border: #ffffff;
+  --border-subtle: #27282d;
+  --muted: #8e9199;
+  --focus-ring: #ffffff;
+  
+  --line-thickness: 1.5px;
+  
+  /* Fluid Curves */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-full: 9999px;
+
+  /* Snappy Transitions */
+  --transition-fast: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[data-theme="light"] {
+  --bg: #f8f9fa;
+  --fg: #0a0a0a;
+  --surface: #ffffff;
+  --surface-alt: #f1f3f5;
+  --border: #0a0a0a;
+  --border-subtle: #dbe0e5;
+  --muted: #6c757d;
+  --focus-ring: #0a0a0a;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+::selection {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 74px; /* Space for Mobile Bottom Bar */
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+@media (min-width: 769px) {
+  body {
+    padding-bottom: 0;
+  }
+}
+
+/* ── Vector Icon Base ─────────────────────────────────────── */
+.v-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+  transition: var(--transition-fast);
+}
+
+/* ── Top Bar with Curved Shell ────────────────────────────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background-color: var(--surface);
+  border-bottom: var(--line-thickness) solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition-fast);
+}
+
+.brand:hover .brand-icon {
+  transform: rotate(15deg) scale(1.08);
+}
+
+.brand-icon {
+  width: 26px;
+  height: 26px;
+  color: var(--fg);
+  transition: var(--transition-bounce);
+}
+
+.brand-title {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--bg);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--bg);
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: var(--transition-fast);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background-color: var(--muted);
+  transition: var(--transition-fast);
+}
+
+.status-dot.active {
+  background-color: var(--fg);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg);
+  animation: pulse-ring 1.2s infinite;
+}
+
+.status-dot.scanning {
+  background-color: var(--fg);
+  animation: pulse-dot 0.8s infinite alternate;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.6; }
+  100% { transform: scale(0.95); opacity: 1; }
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.8); opacity: 0.3; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+.top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Segmented Control & Icon Buttons ─────────────────────── */
+.segmented-control {
+  display: inline-flex;
+  border: var(--line-thickness) solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 2px;
+  background: var(--bg);
+}
+
+.segmented-btn {
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: var(--transition-fast);
+}
+
+.segmented-btn:hover {
+  color: var(--fg);
+}
+
+.segmented-btn.active {
+  background: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.icon-btn {
+  background: var(--bg);
+  border: var(--line-thickness) solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--fg);
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-bounce);
+}
+
+.icon-btn:hover {
+  background: var(--fg);
+  color: var(--bg);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.icon-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* ── Emergency Action (B&W Kill Network) ─────────────────── */
+.btn-emergency {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--fg);
+  color: var(--bg);
+  border: var(--line-thickness) solid var(--fg);
+  border-radius: var(--radius-full);
+  padding: 7px 14px;
+  font-weight: 800;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: var(--transition-bounce);
+}
+
+.btn-emergency:hover {
+  background-color: var(--bg);
+  color: var(--fg);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+}
+
+.btn-emergency:active {
+  transform: scale(0.96);
+}
+
+.btn-emergency-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg);
+  color: var(--fg);
+  border: var(--line-thickness) solid var(--fg);
+  border-radius: var(--radius-full);
+  padding: 7px 14px;
+  font-weight: 800;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: var(--transition-fast);
+}
+
+/* ── Desktop Navigation ───────────────────────────────────── */
+.desktop-nav {
+  display: none;
+  background: var(--surface);
+  border-bottom: var(--line-thickness) solid var(--border-subtle);
+  padding: 0 16px;
+}
+
+@media (min-width: 769px) {
+  .desktop-nav {
+    display: flex;
+    gap: 6px;
+  }
+}
+
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 12px 18px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  position: relative;
+  transition: var(--transition-fast);
+}
+
+.nav-tab:hover {
+  color: var(--fg);
+}
+
+.nav-tab.active {
+  color: var(--fg);
+}
+
+.nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  background: var(--fg);
+  border-radius: 3px 3px 0 0;
+  animation: tabUnderline 0.25s ease-out;
+}
+
+@keyframes tabUnderline {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ── Mobile Bottom Navigation Bar ─────────────────────────── */
+.bottom-nav {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: var(--surface);
+  border-top: var(--line-thickness) solid var(--border-subtle);
+  z-index: 200;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 4px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@media (min-width: 769px) {
+  .bottom-nav {
+    display: none;
+  }
+}
+
+.bottom-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  gap: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  flex: 1;
+  padding: 6px 0;
+  min-height: 48px;
+  transition: var(--transition-fast);
+}
+
+.bottom-tab-box {
+  width: 48px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-bounce);
+}
+
+.bottom-tab-label {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  text-transform: uppercase;
+  transition: var(--transition-fast);
+}
+
+.bottom-tab.active .bottom-tab-box {
+  background: var(--fg);
+  color: var(--bg);
+  transform: translateY(-2px);
+}
+
+.bottom-tab.active .bottom-tab-label {
+  color: var(--fg);
+}
+
+/* ── Main Layout Containers with Curved Cards ─────────────── */
+.main-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.card {
+  background: var(--surface);
+  border: var(--line-thickness) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  transition: var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 10px;
+}
+
+.card-title {
+  font-size: 0.88rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Form Controls & Curved Inputs ────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 640px) {
+  .form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.input, .select {
+  font-family: var(--font-mono);
+  background-color: var(--bg);
+  border: var(--line-thickness) solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  outline: none;
+  width: 100%;
+  transition: var(--transition-fast);
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+[data-theme="light"] .select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+.select option {
+  background-color: var(--surface);
+  color: var(--fg);
+  padding: 8px;
+}
+
+.input:focus, .select:focus {
+  border-color: var(--border);
+  background: var(--surface-alt);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+}
+
+[data-theme="light"] .input:focus, [data-theme="light"] .select:focus {
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+}
+
+/* ── Curved Solid Buttons with Bounce Feedback ────────────── */
+.btn {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  border: var(--line-thickness) solid var(--border);
+  border-radius: var(--radius-full);
+  transition: var(--transition-bounce);
+  min-height: 42px;
+}
+
+.btn-primary {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.btn-primary:hover {
+  background: var(--bg);
+  color: var(--fg);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,255,255,0.12);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.btn-tonal {
+  background: var(--bg);
+  color: var(--fg);
+  border-color: var(--border-subtle);
+}
+
+.btn-tonal:hover {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--border);
+  transform: translateY(-2px);
+}
+
+.btn-tonal:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.btn-danger {
+  background: var(--bg);
+  color: var(--fg);
+  border-color: var(--border);
+  text-decoration: underline;
+}
+
+.btn-danger:hover {
+  background: var(--fg);
+  color: var(--bg);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+/* ── Mobile Data Table with Rounded Viewport ──────────────── */
+.table-wrapper {
+  overflow-x: auto;
+  border: var(--line-thickness) solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  text-align: left;
+}
+
+th {
+  background: var(--surface-alt);
+  padding: 10px 12px;
+  font-weight: 800;
+  color: var(--fg);
+  border-bottom: var(--line-thickness) solid var(--border-subtle);
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+tr:hover td {
+  background: var(--surface-alt);
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.badge-tcp, .badge-udp, .badge-http, .badge-dns, .badge-tls, .badge-arp {
+  background: var(--surface-alt);
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+/* ── Log Terminal with Curved Shell ───────────────────────── */
+.terminal {
+  background: #000000;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  border: var(--line-thickness) solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  height: 320px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  word-break: break-all;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.log-time {
+  color: #888888;
+}
+
+.log-level-info, .log-level-warn, .log-level-error, .log-level-success {
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* ── Tab Panels with Smooth Fade ──────────────────────────── */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+  animation: panelReveal 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes panelReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

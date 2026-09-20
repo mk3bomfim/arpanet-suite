@@ -1,0 +1,5 @@
+package com.arpanet.suite;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
