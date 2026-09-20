@@ -47,14 +47,18 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Upload Android APK
+      - name: Rename APK for Release
+        run: |
+          cp android/android/app/build/outputs/apk/debug/app-debug.apk ./arpanet-suite.apk
+
+      - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: arpanet-suite-apk
-          path: android/android/app/build/outputs/apk/debug/*.apk
+          path: ./arpanet-suite.apk
           retention-days: 14
 
-      - name: Upload Go Android ARM64 Binary
+      - name: Upload Go Android ARM64 Binary Artifact
         uses: actions/upload-artifact@v4
         with:
           name: arpanet-arm64-binary
@@ -76,9 +80,74 @@ jobs:
         run: |
           go build -o arpanet.exe -ldflags="-H windowsgui" .
 
-      - name: Upload Windows Exe
+      - name: Upload Windows Exe Artifact
         uses: actions/upload-artifact@v4
         with:
           name: arpanet-suite-windows
           path: arpanet.exe
           retention-days: 14
+
+  release:
+    needs: [ build-apk, build-windows ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: arpanet-suite-apk
+          path: ./release-assets
+
+      - name: Download Windows Exe
+        uses: actions/download-artifact@v4
+        with:
+          name: arpanet-suite-windows
+          path: ./release-assets
+
+      - name: Download ARM64 Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: arpanet-arm64-binary
+          path: ./release-assets
+
+      - name: List release assets
+        run: ls -lh ./release-assets/
+
+      - name: Delete existing rolling release (if any)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete v2-latest --repo ${{ github.repository }} --yes 2>/dev/null || true
+
+      - name: Create GitHub Release v2-latest
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2-latest
+          name: "Arpanet Suite v2 — Latest Build"
+          body: |
+            ## Arpanet Suite v2 — Build Automática
+
+            > Gerado automaticamente pelo commit `${{ github.sha }}` no branch `${{ github.ref_name }}`.
+
+            ### Downloads
+
+            | Arquivo | Plataforma |
+            |---------|-----------|
+            | `arpanet-suite.apk` | Android (debug, ARM64) |
+            | `arpanet.exe` | Windows 10/11 (x64) |
+            | `arpanet-arm64` | Android Native Engine (Go binary) |
+
+            ### Novidades desta build
+            - Painel Kill All com seleção de dispositivos e timer animado
+            - Gateway automático sem hardcode
+            - Backend Go nativo no Android (127.0.0.1:9731)
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: |
+            ./release-assets/arpanet-suite.apk
+            ./release-assets/arpanet.exe
+            ./release-assets/arpanet-arm64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
