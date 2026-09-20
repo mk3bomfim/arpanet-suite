@@ -10,6 +10,12 @@ let activeAuditMode = 'mitm';
 let serverBaseUrl = localStorage.getItem('arpanet_server_url') || 'http://127.0.0.1:9731';
 let logEventSource = null;
 
+/* Kill-All panel state */
+let killDurationSeconds = 30;
+let killTimerInterval = null;
+let killTimerRemaining = 0;
+let lastScanHosts = [];
+
 let detectedNetwork = {
   ip: '127.0.0.1',
   gateway: '127.0.0.1',
@@ -54,7 +60,20 @@ const translations = {
     mode_dos_desc: "Sem repasse (corta tráfego)",
     btn_engage: "Iniciar Auditoria",
     btn_cease: "Interromper",
-    btn_kill_all: "DERRUBAR TODA A REDE (KILL ALL)",
+    btn_kill_all: "DERRUBAR REDE (KILL ALL)",
+    kill_panel_title: "Painel de Contenção de Rede",
+    lbl_kill_duration: "Duração do Bloqueio",
+    lbl_seconds: "segundos",
+    lbl_remaining: "restante",
+    lbl_kill_targets: "Alvos do Bloqueio",
+    btn_select_all: "Todos",
+    btn_deselect_all: "Nenhum",
+    kill_empty_hint: "Execute uma varredura ARP primeiro para listar os alvos disponíveis.",
+    btn_abort_kill: "Abortar Contenção",
+    kill_confirm: "CONFIRMAÇÃO CRÍTICA: Derrubar a rede pelos alvos selecionados?",
+    kill_no_targets: "Nenhum alvo selecionado. Selecione ao menos um dispositivo.",
+    kill_active: "Contenção ativa — rede derrubada por",
+    kill_restored: "Contenção encerrada. Rede restaurada.",
     title_backend: "Servidor Arpanet Suite",
     sub_backend: "Conexão com o backend de pacotes raw (Go)",
     lbl_server_url: "URL do Servidor Daemon",
@@ -107,7 +126,20 @@ const translations = {
     mode_dos_desc: "Zero forward (drops traffic)",
     btn_engage: "Engage Audit",
     btn_cease: "Cease / Stop",
-    btn_kill_all: "DROP ALL NETWORK TRAFFIC (KILL ALL)",
+    btn_kill_all: "DROP NETWORK (KILL ALL)",
+    kill_panel_title: "Network Containment Panel",
+    lbl_kill_duration: "Block Duration",
+    lbl_seconds: "seconds",
+    lbl_remaining: "remaining",
+    lbl_kill_targets: "Target Devices",
+    btn_select_all: "All",
+    btn_deselect_all: "None",
+    kill_empty_hint: "Run an ARP scan first to list available targets.",
+    btn_abort_kill: "Abort Containment",
+    kill_confirm: "CRITICAL: Drop network for selected targets?",
+    kill_no_targets: "No targets selected. Select at least one device.",
+    kill_active: "Containment active — network dropped for",
+    kill_restored: "Containment ended. Network restored.",
     title_backend: "Arpanet Suite Server",
     sub_backend: "Connection to raw packet Go daemon",
     lbl_server_url: "Server Daemon URL",
@@ -379,9 +411,11 @@ function renderHostResults(hosts) {
 
   if (!hosts || hosts.length === 0) {
     container.innerHTML = `<div class="empty-state">${translations[currentLang].empty_scan}</div>`;
+    syncKillDeviceList([]);
     return;
   }
 
+  lastScanHosts = hosts;
   container.innerHTML = '';
   hosts.forEach(host => {
     const card = document.createElement('div');
@@ -407,6 +441,43 @@ function renderHostResults(hosts) {
     card.appendChild(info);
     card.appendChild(btn);
     container.appendChild(card);
+  });
+
+  syncKillDeviceList(hosts);
+}
+
+function syncKillDeviceList(hosts) {
+  const list = document.getElementById('kill-devices-list');
+  if (!list) return;
+
+  if (!hosts || hosts.length === 0) {
+    list.innerHTML = `<div class="kill-empty-hint">${translations[currentLang].kill_empty_hint}</div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  hosts.forEach(host => {
+    if (host.isSelf) return; // Never show self as target
+    const row = document.createElement('label');
+    row.className = 'kill-device-row';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'kill-device-cb';
+    cb.dataset.ip = host.ip;
+    cb.checked = !host.isGateway; // pre-check everything except gateway by default
+
+    const label = document.createElement('div');
+    label.className = 'kill-device-label';
+    label.innerHTML = `
+      <span class="kdl-ip font-mono">${host.ip}</span>
+      <span class="kdl-name">${host.hostname || (host.isGateway ? '🔀 Gateway' : 'Dispositivo')}</span>
+      ${host.isGateway ? '<span class="kdl-tag-gw">GW</span>' : ''}
+    `;
+
+    row.appendChild(cb);
+    row.appendChild(label);
+    list.appendChild(row);
   });
 }
 
@@ -460,26 +531,131 @@ function stopAuditOperation() {
     });
 }
 
+/* ── Kill Panel: Duration Selection ────────────────────────── */
+function selectKillDuration(btn, seconds) {
+  document.querySelectorAll('.duration-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  killDurationSeconds = seconds;
+  document.getElementById('kill-custom-seconds').value = '';
+}
+
+/* ── Kill Panel: Select/Deselect All ───────────────────────── */
+function killSelectAll(state) {
+  document.querySelectorAll('.kill-device-cb').forEach(cb => cb.checked = state);
+}
+
+/* ── Kill Panel: Get selected IPs ──────────────────────────── */
+function getSelectedKillTargets() {
+  return Array.from(document.querySelectorAll('.kill-device-cb:checked'))
+    .map(cb => cb.dataset.ip)
+    .filter(Boolean);
+}
+
+/* ── Kill Panel: Trigger ────────────────────────────────────── */
 function triggerKillAll() {
-  const confirmMsg = currentLang === 'pt' 
-    ? "CONFIRMAÇÃO CRÍTICA: Deseja derrubar a conexão de todos os dispositivos na rede local?"
-    : "CRITICAL CONFIRMATION: Drop network connectivity for all local devices?";
+  if (killTimerInterval) return; // already running
 
-  if (!confirm(confirmMsg)) return;
+  // Resolve duration
+  const customInput = document.getElementById('kill-custom-seconds');
+  if (customInput && customInput.value) {
+    const parsed = parseInt(customInput.value, 10);
+    if (parsed > 0) killDurationSeconds = parsed;
+  }
 
-  appendLog(`[KILL-ALL] Disparando sinal de contenção de emergência...`);
+  // Resolve targets
+  const targets = getSelectedKillTargets();
+  if (targets.length === 0) {
+    alert(translations[currentLang].kill_no_targets);
+    return;
+  }
+
+  if (!confirm(translations[currentLang].kill_confirm)) return;
+
+  const duration = killDurationSeconds;
+  appendLog(`[KILL-ALL] Contenção ativada para ${targets.length} alvo(s) por ${duration}s...`);
+
+  // Fire the kill
   fetch(`${serverBaseUrl}/api/killall`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ hosts: [] })
+    body: JSON.stringify({ hosts: targets, gateway: detectedNetwork.gateway })
   })
   .then(r => r.json())
-  .then(() => {
-    appendLog(`[KILL-ALL-EXECUTED] Sinal transmitido.`);
-  })
-  .catch(() => {
-    appendLog(`[KILL-ALL-TRIGGERED] Sinal de emergência transmitido.`);
+  .catch(() => {})
+  .finally(() => {
+    appendLog(`[KILL-ALL] Sinal transmitido para: ${targets.join(', ')}`);
   });
+
+  // Start countdown UI
+  startKillCountdown(duration, targets);
+}
+
+function startKillCountdown(duration, targets) {
+  const display = document.getElementById('kill-timer-display');
+  const triggerBtn = document.getElementById('btn-kill-all-trigger');
+  const arc = document.getElementById('kill-timer-arc');
+  const textEl = document.getElementById('kill-timer-text');
+  const circumference = 2 * Math.PI * 24; // r=24
+
+  display.style.display = 'flex';
+  triggerBtn.disabled = true;
+  triggerBtn.classList.add('kill-active');
+
+  arc.style.strokeDasharray = circumference;
+  arc.style.strokeDashoffset = '0';
+
+  killTimerRemaining = duration;
+
+  function updateTimer() {
+    const frac = killTimerRemaining / duration;
+    arc.style.strokeDashoffset = circumference * (1 - frac);
+    const mins = Math.floor(killTimerRemaining / 60);
+    const secs = killTimerRemaining % 60;
+    textEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+    if (killTimerRemaining <= 0) {
+      clearInterval(killTimerInterval);
+      killTimerInterval = null;
+      // Release / restore
+      fetch(`${serverBaseUrl}/api/killall/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hosts: targets, gateway: detectedNetwork.gateway })
+      }).catch(() => {});
+
+      display.style.display = 'none';
+      triggerBtn.disabled = false;
+      triggerBtn.classList.remove('kill-active');
+      appendLog(`[KILL-ALL-RESTORED] ${translations[currentLang].kill_restored}`);
+      return;
+    }
+    killTimerRemaining--;
+  }
+
+  updateTimer();
+  killTimerInterval = setInterval(updateTimer, 1000);
+}
+
+function abortKillAll() {
+  if (!killTimerInterval) return;
+  clearInterval(killTimerInterval);
+  killTimerInterval = null;
+
+  const display = document.getElementById('kill-timer-display');
+  const triggerBtn = document.getElementById('btn-kill-all-trigger');
+  const targets = getSelectedKillTargets();
+
+  display.style.display = 'none';
+  triggerBtn.disabled = false;
+  triggerBtn.classList.remove('kill-active');
+
+  fetch(`${serverBaseUrl}/api/killall/restore`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hosts: targets, gateway: detectedNetwork.gateway })
+  }).catch(() => {});
+
+  appendLog(`[KILL-ALL-ABORTED] Contenção abortada manualmente. Rede restaurada.`);
 }
 
 /* ── Server Daemon Link ─────────────────────────────────────── */

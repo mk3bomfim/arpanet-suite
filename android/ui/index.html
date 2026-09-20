@@ -258,14 +258,77 @@
           </button>
         </div>
 
-        <div class="danger-zone">
-          <button class="btn-danger-kill" onclick="triggerKillAll()">
+        <!-- ── Kill All Control Panel ─────────────────────────── -->
+        <div class="kill-panel">
+          <div class="kill-panel-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span data-i18n="kill_panel_title">Painel de Contenção de Rede</span>
+          </div>
+
+          <!-- Duration Row -->
+          <div class="kill-duration-row">
+            <label class="form-label" data-i18n="lbl_kill_duration">Duração do Bloqueio</label>
+            <div class="kill-duration-chips" id="kill-duration-chips">
+              <button class="duration-chip active" data-seconds="30" onclick="selectKillDuration(this, 30)">30s</button>
+              <button class="duration-chip" data-seconds="60" onclick="selectKillDuration(this, 60)">1min</button>
+              <button class="duration-chip" data-seconds="180" onclick="selectKillDuration(this, 180)">3min</button>
+              <button class="duration-chip" data-seconds="300" onclick="selectKillDuration(this, 300)">5min</button>
+              <button class="duration-chip" data-seconds="600" onclick="selectKillDuration(this, 600)">10min</button>
+            </div>
+            <div class="kill-custom-row">
+              <input type="number" class="m-input font-mono kill-custom-input" id="kill-custom-seconds" placeholder="Personalizado (s)" min="1" max="3600">
+              <span class="kill-custom-hint" data-i18n="lbl_seconds">segundos</span>
+            </div>
+          </div>
+
+          <!-- Timer Countdown -->
+          <div class="kill-timer-display" id="kill-timer-display" style="display:none">
+            <div class="kill-timer-ring">
+              <svg viewBox="0 0 56 56" class="kill-timer-svg">
+                <circle cx="28" cy="28" r="24" class="kill-timer-track"/>
+                <circle cx="28" cy="28" r="24" class="kill-timer-progress" id="kill-timer-arc"/>
+              </svg>
+              <div class="kill-timer-label">
+                <span id="kill-timer-text" class="font-mono">0:30</span>
+                <span class="kill-timer-sub" data-i18n="lbl_remaining">restante</span>
+              </div>
+            </div>
+            <button class="btn-kill-abort" onclick="abortKillAll()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="6" y="6" width="12" height="12"/>
+              </svg>
+              <span data-i18n="btn_abort_kill">Abortar Contenção</span>
+            </button>
+          </div>
+
+          <!-- Device Selector -->
+          <div class="kill-device-section">
+            <div class="kill-device-header">
+              <span class="form-label" data-i18n="lbl_kill_targets">Alvos do Bloqueio</span>
+              <div class="kill-select-controls">
+                <button class="btn-select-all" onclick="killSelectAll(true)" data-i18n="btn_select_all">Todos</button>
+                <button class="btn-select-all" onclick="killSelectAll(false)" data-i18n="btn_deselect_all">Nenhum</button>
+              </div>
+            </div>
+            <div class="kill-devices-list" id="kill-devices-list">
+              <div class="kill-empty-hint" data-i18n="kill_empty_hint">
+                Execute uma varredura ARP primeiro para listar os alvos disponíveis.
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <button class="btn-danger-kill" id="btn-kill-all-trigger" onclick="triggerKillAll()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
               <line x1="12" y1="9" x2="12" y2="13"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <span data-i18n="btn_kill_all">DERRUBAR TODA A REDE (KILL ALL)</span>
+            <span data-i18n="btn_kill_all">DERRUBAR REDE (KILL ALL)</span>
           </button>
         </div>
       </div>
