@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
 )
 
 // ─── Capture session ─────────────────────────────────────────────────────────
@@ -25,9 +24,10 @@ func (s *CaptureSession) Stop() { s.cancel() }
 // startCapture begins sniffing traffic for targetIP on ifaceName.
 // logFn gets text log entries; pktFn receives structured packet events.
 func startCapture(ifaceName, targetIP string, logFn func(string), pktFn func(PacketInfo)) (*CaptureSession, error) {
-	handle, err := pcap.OpenLive(ifaceName, 65536, true, 500*time.Millisecond)
+	handle, err := pcapOpenLive(ifaceName, 65536, true, 500*time.Millisecond)
 	if err != nil {
-		return nil, fmt.Errorf("pcap open for capture: %w", err)
+		logFn(fmt.Sprintf("Captura raw desativada (%v)", err))
+		return nil, err
 	}
 
 	filter := fmt.Sprintf("host %s and not arp", targetIP)
@@ -40,15 +40,15 @@ func startCapture(ifaceName, targetIP string, logFn func(string), pktFn func(Pac
 
 	go func() {
 		defer handle.Close()
-		src := gopacket.NewPacketSource(handle, handle.LinkType())
-		logFn(fmt.Sprintf("👁  Capturing %s | filter: %s", targetIP, filter))
+		packetsChan := handle.Packets()
+		logFn(fmt.Sprintf("Capturando %s | filter: %s", targetIP, filter))
 
 		for {
 			select {
 			case <-ctx.Done():
-				logFn("■ Capture stopped")
+				logFn("Captura finalizada")
 				return
-			case pkt, ok := <-src.Packets():
+			case pkt, ok := <-packetsChan:
 				if !ok {
 					return
 				}
@@ -268,17 +268,44 @@ func disableForwarding() {
 	).Run()
 }
 
-// getDefaultGateway attempts to read the default gateway from `route print`.
+// getDefaultGateway attempts to read the default gateway on Windows, Linux, and Android.
 func getDefaultGateway() string {
-	out, err := exec.Command("route", "print", "0.0.0.0").Output()
-	if err != nil {
-		return ""
-	}
-	for _, line := range strings.Split(string(out), "\n") {
-		fields := strings.Fields(line)
-		if len(fields) >= 3 && fields[0] == "0.0.0.0" && fields[1] == "0.0.0.0" {
-			return fields[2]
+	// 1. Windows: route print
+	if out, err := exec.Command("route", "print", "0.0.0.0").Output(); err == nil {
+		for _, line := range strings.Split(string(out), "\n") {
+			fields := strings.Fields(line)
+			if len(fields) >= 3 && fields[0] == "0.0.0.0" && fields[1] == "0.0.0.0" {
+				return fields[2]
+			}
 		}
 	}
+
+	// 2. Linux / Android: /proc/net/route
+	if out, err := exec.Command("cat", "/proc/net/route").Output(); err == nil {
+		for _, line := range strings.Split(string(out), "\n") {
+			fields := strings.Fields(line)
+			if len(fields) >= 3 && fields[1] == "00000000" {
+				gwHex := fields[2]
+				if len(gwHex) == 8 {
+					var b0, b1, b2, b3 byte
+					fmt.Sscanf(gwHex, "%02x%02x%02x%02x", &b3, &b2, &b1, &b0)
+					return fmt.Sprintf("%d.%d.%d.%d", b0, b1, b2, b3)
+				}
+			}
+		}
+	}
+
+	// 3. Linux / Android fallback: ip route
+	if out, err := exec.Command("ip", "route").Output(); err == nil {
+		for _, line := range strings.Split(string(out), "\n") {
+			if strings.HasPrefix(line, "default via ") {
+				parts := strings.Fields(line)
+				if len(parts) >= 3 {
+					return parts[2]
+				}
+			}
+		}
+	}
+
 	return ""
 }

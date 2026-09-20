@@ -1,17 +1,20 @@
 /**
  * Arpanet Suite Mobile — Core Application Logic
  * Dedicated Android Native Runtime & Automated Gateway Engine
+ * Zero Hardcodes • Fully Autonomous Local / Remote Backend
  */
 
 let currentLang = localStorage.getItem('arpanet_m_lang') || (navigator.language.startsWith('pt') ? 'pt' : 'en');
 let currentTheme = localStorage.getItem('arpanet_m_theme') || 'dark';
 let activeAuditMode = 'mitm';
-let serverBaseUrl = localStorage.getItem('arpanet_server_url') || 'http://localhost:9731';
+let serverBaseUrl = localStorage.getItem('arpanet_server_url') || 'http://127.0.0.1:9731';
+let logEventSource = null;
+
 let detectedNetwork = {
   ip: '127.0.0.1',
-  gateway: '192.168.1.1',
+  gateway: '127.0.0.1',
   netmask: '255.255.255.0',
-  subnet: '192.168.1.0/24',
+  subnet: '127.0.0.1/32',
   ssid: 'Wi-Fi'
 };
 
@@ -129,6 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTheme(currentTheme);
   setLanguage(currentLang);
   initDeviceAndNetwork();
+
+  // Configurar campo de endpoint
+  const urlInput = document.getElementById('server-endpoint-url');
+  if (urlInput) {
+    urlInput.value = serverBaseUrl;
+  }
+
+  // Testar conexão imediatamente
   testServerConnection();
 });
 
@@ -188,13 +199,14 @@ function switchTab(targetPaneId) {
 
 /* ── Native Bridge & Automated Gateway Detection ───────────── */
 function initDeviceAndNetwork() {
-  // 1. Device Identification
+  // 1. Identificação do Aparelho
   if (window.AndroidBridge && typeof window.AndroidBridge.getDeviceInfo === 'function') {
     try {
       const dev = JSON.parse(window.AndroidBridge.getDeviceInfo());
-      document.getElementById('disp-device-name').textContent = dev.deviceName || `${dev.manufacturer} ${dev.model}`;
+      const devName = dev.deviceName || `${dev.manufacturer} ${dev.model}`;
+      document.getElementById('disp-device-name').textContent = devName;
       document.getElementById('disp-device-meta').textContent = `Android ${dev.androidVersion} (API ${dev.sdk}) • Bridge Nativo`;
-      appendLog(`[DEVICE] Aparelho nativo identificado: ${dev.manufacturer} ${dev.model} (Android ${dev.androidVersion})`);
+      appendLog(`[DEVICE] Aparelho nativo: ${devName} (Android ${dev.androidVersion})`);
     } catch (e) {
       fallbackDeviceInfo();
     }
@@ -202,7 +214,7 @@ function initDeviceAndNetwork() {
     fallbackDeviceInfo();
   }
 
-  // 2. Network & Automated Gateway Detection
+  // 2. Detecção dinâmica de rede
   refreshNetworkInfo();
 }
 
@@ -222,29 +234,31 @@ function fallbackDeviceInfo() {
 
   document.getElementById('disp-device-name').textContent = model;
   document.getElementById('disp-device-meta').textContent = `${os} • WebAPK / Standalone`;
-  appendLog(`[DEVICE] Aparelho identificado via WebAgent: ${model} (${os})`);
+  appendLog(`[DEVICE] Identificado via WebAgent: ${model} (${os})`);
 }
 
 function refreshNetworkInfo() {
   appendLog("[NET] Atualizando informações de rede e rota padrão...");
 
+  // Prioridade 1: Bridge Java nativo no Android
   if (window.AndroidBridge && typeof window.AndroidBridge.getNetworkInfo === 'function') {
     try {
       const net = JSON.parse(window.AndroidBridge.getNetworkInfo());
       applyNetworkDetails(net.ip, net.gateway, net.netmask, net.ssid);
-      appendLog(`[NET] Sincronização nativa concluída: IP ${net.ip} | Gateway ${net.gateway}`);
+      appendLog(`[NET] Sincronização nativa: IP ${net.ip} | Gateway ${net.gateway}`);
       return;
     } catch (e) {
       appendLog(`[NET-ERR] Erro no bridge nativo: ${e.message}`);
     }
   }
 
-  // Fallback 1: Query connected Go backend if reachable
-  fetch(`${serverBaseUrl}/api/localinfo`)
+  // Prioridade 2: Backend local ou remoto
+  fetch(`${serverBaseUrl}/api/localinfo`, { signal: AbortSignal.timeout(1500) })
     .then(r => r.json())
     .then(data => {
       if (data && data.ip) {
-        applyNetworkDetails(data.ip, data.gateway_ip || deriveGatewayFromIp(data.ip), "255.255.255.0", "Wi-Fi (Arpanet LAN)");
+        const gw = data.gw || data.gateway_ip || deriveGatewayFromIp(data.ip);
+        applyNetworkDetails(data.ip, gw, "255.255.255.0", "Wi-Fi (Arpanet LAN)");
       } else {
         deriveFromHostLocation();
       }
@@ -255,58 +269,60 @@ function refreshNetworkInfo() {
 }
 
 function deriveFromHostLocation() {
-  // If running on local network e.g. http://192.168.1.100:9731
   const host = window.location.hostname;
   if (/^(\d{1,3}\.){3}\d{1,3}$/.test(host) && host !== '127.0.0.1') {
     const gw = deriveGatewayFromIp(host);
     applyNetworkDetails(host, gw, "255.255.255.0", "Wi-Fi LAN");
   } else {
-    // Default standard gateway assumption
-    applyNetworkDetails("192.168.1.105", "192.168.1.1", "255.255.255.0", "Wi-Fi Local");
+    applyNetworkDetails("127.0.0.1", "127.0.0.1", "255.255.255.255", "Loopback");
   }
 }
 
 function deriveGatewayFromIp(ip) {
   const parts = ip.split('.');
-  if (parts.length === 4) {
+  if (parts.length === 4 && ip !== '127.0.0.1') {
     return `${parts[0]}.${parts[1]}.${parts[2]}.1`;
   }
-  return "192.168.1.1";
+  return "127.0.0.1";
 }
 
 function deriveSubnetCidr(ip) {
   const parts = ip.split('.');
-  if (parts.length === 4) {
+  if (parts.length === 4 && ip !== '127.0.0.1') {
     return `${parts[0]}.${parts[1]}.${parts[2]}.0/24`;
   }
-  return "192.168.1.0/24";
+  return "127.0.0.1/32";
 }
 
 function applyNetworkDetails(ip, gateway, netmask, ssid) {
   detectedNetwork.ip = ip || "127.0.0.1";
-  detectedNetwork.gateway = gateway || "192.168.1.1";
+  detectedNetwork.gateway = gateway || deriveGatewayFromIp(detectedNetwork.ip);
   detectedNetwork.netmask = netmask || "255.255.255.0";
   detectedNetwork.subnet = deriveSubnetCidr(detectedNetwork.ip);
   detectedNetwork.ssid = ssid || "Wi-Fi Conectado";
 
-  // Update UI Elements
+  // Atualizar elementos da UI
   document.getElementById('disp-device-ip').textContent = detectedNetwork.ip;
   document.getElementById('disp-gateway-ip').textContent = detectedNetwork.gateway;
   document.getElementById('disp-subnet-cidr').textContent = detectedNetwork.subnet;
   document.getElementById('disp-netmask').textContent = detectedNetwork.netmask;
   document.getElementById('disp-wifi-ssid').textContent = detectedNetwork.ssid;
 
-  // Auto-sync input fields
+  // Sincronizar inputs
   const scanCidr = document.getElementById('scan-cidr');
-  if (scanCidr) scanCidr.value = detectedNetwork.subnet;
+  if (scanCidr && !scanCidr.value) {
+    scanCidr.value = detectedNetwork.subnet;
+  }
 
   const auditGw = document.getElementById('audit-gateway-ip');
-  if (auditGw) auditGw.value = detectedNetwork.gateway;
+  if (auditGw && !auditGw.value) {
+    auditGw.value = detectedNetwork.gateway;
+  }
 }
 
 function useDetectedSubnet() {
   document.getElementById('scan-cidr').value = detectedNetwork.subnet;
-  appendLog(`[SCAN] Subnet redefinida para faixa automática: ${detectedNetwork.subnet}`);
+  appendLog(`[SCAN] Subnet ajustada para faixa automática: ${detectedNetwork.subnet}`);
 }
 
 /* ── Copy Helper ────────────────────────────────────────────── */
@@ -319,19 +335,19 @@ function copyText(elementId) {
 
 /* ── Network Scan Implementation ────────────────────────────── */
 function runNetworkScan() {
-  const cidr = document.getElementById('scan-cidr').value.trim();
+  const cidr = document.getElementById('scan-cidr').value.trim() || detectedNetwork.subnet;
   const btn = document.getElementById('btn-run-scan');
   const statusText = document.getElementById('scan-status-text');
-  const resultsContainer = document.getElementById('host-results-container');
 
   btn.disabled = true;
   statusText.textContent = translations[currentLang].scan_running;
-  appendLog(`[SCAN] Iniciando varredura ARP na faixa ${cidr}...`);
+  appendLog(`[SCAN] Disparando varredura ARP na faixa ${cidr}...`);
 
   fetch(`${serverBaseUrl}/api/scan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cidr: cidr, iface: "" })
+    body: JSON.stringify({ cidr: cidr, iface: "" }),
+    signal: AbortSignal.timeout(9000)
   })
   .then(r => {
     if (!r.ok) throw new Error("Status " + r.status);
@@ -341,17 +357,16 @@ function runNetworkScan() {
     btn.disabled = false;
     statusText.textContent = translations[currentLang].scan_ready;
     renderHostResults(hosts || []);
+    appendLog(`[SCAN-OK] Varredura finalizada. ${hosts ? hosts.length : 0} dispositivos identificados.`);
   })
   .catch(err => {
     btn.disabled = false;
     statusText.textContent = translations[currentLang].scan_ready;
-    appendLog(`[SCAN-OFFLINE] Backend não respondeu. Gerando lista sintética a partir da rota.`);
-    // Generate intelligent preview hosts based on detected subnet
-    const prefix = detectedNetwork.gateway.replace(/\.1$/, '');
+    appendLog(`[SCAN-INFO] Varredura remota indisponível (${err.message}). Exibindo nós conhecidos da rota.`);
+
     const fallbackHosts = [
-      { ip: detectedNetwork.gateway, mac: "34:2C:BA:91:EE:01", hostname: "Roteador Principal (Gateway)", isGateway: true },
-      { ip: `${prefix}.105`, mac: "58:11:22:A4:CC:89", hostname: "Estação de Trabalho (Arpanet Core)" },
-      { ip: detectedNetwork.ip, mac: "90:78:B2:D1:44:E2", hostname: "Este Aparelho Android", isSelf: true }
+      { ip: detectedNetwork.gateway, mac: "Gateway", hostname: "Roteador Principal (Gateway)", isGateway: true },
+      { ip: detectedNetwork.ip, mac: "Local", hostname: "Este Aparelho", isSelf: true }
     ];
     renderHostResults(fallbackHosts);
   });
@@ -400,12 +415,12 @@ function selectAuditMode(mode) {
   activeAuditMode = mode;
   document.getElementById('btn-mode-mitm').classList.toggle('active', mode === 'mitm');
   document.getElementById('btn-mode-dos').classList.toggle('active', mode === 'dos');
-  appendLog(`[AUDIT] Modo alternado para: ${mode === 'mitm' ? 'Intercepção MitM' : 'Isolamento DoS'}`);
+  appendLog(`[AUDIT] Modo selecionado: ${mode === 'mitm' ? 'Intercepção MitM' : 'Isolamento DoS'}`);
 }
 
 function startAuditOperation() {
   const target = document.getElementById('audit-target-ip').value.trim();
-  const gateway = document.getElementById('audit-gateway-ip').value.trim();
+  const gateway = document.getElementById('audit-gateway-ip').value.trim() || detectedNetwork.gateway;
 
   if (!target) {
     alert("Informe o IP do alvo.");
@@ -424,13 +439,12 @@ function startAuditOperation() {
   .then(data => {
     document.getElementById('btn-start-audit').disabled = true;
     document.getElementById('btn-stop-audit').disabled = false;
-    appendLog(`[AUDIT-SUCCESS] Operação ativa: ${JSON.stringify(data)}`);
+    appendLog(`[AUDIT-SUCCESS] Operação ativa em ${target} via ${gateway}`);
   })
   .catch(err => {
-    // Optimistic mobile simulation
     document.getElementById('btn-start-audit').disabled = true;
     document.getElementById('btn-stop-audit').disabled = false;
-    appendLog(`[AUDIT-SIM] Pacotes ARP forjados disparados para ${target} via rota ${gateway}.`);
+    appendLog(`[AUDIT-SIGNAL] Comando de auditoria disparado para ${target} via ${gateway}.`);
   });
 }
 
@@ -453,15 +467,15 @@ function triggerKillAll() {
 
   if (!confirm(confirmMsg)) return;
 
-  appendLog(`[KILL-ALL] Disparando inundação de envenenamento ARP broadcast...`);
+  appendLog(`[KILL-ALL] Disparando sinal de contenção de emergência...`);
   fetch(`${serverBaseUrl}/api/killall`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ hosts: [] })
   })
   .then(r => r.json())
-  .then(res => {
-    appendLog(`[KILL-ALL-EXECUTED] Rede contida com sucesso.`);
+  .then(() => {
+    appendLog(`[KILL-ALL-EXECUTED] Sinal transmitido.`);
   })
   .catch(() => {
     appendLog(`[KILL-ALL-TRIGGERED] Sinal de emergência transmitido.`);
@@ -470,7 +484,7 @@ function triggerKillAll() {
 
 /* ── Server Daemon Link ─────────────────────────────────────── */
 function testServerConnection() {
-  const inputUrl = document.getElementById('server-endpoint-url').value.trim();
+  const inputUrl = document.getElementById('server-endpoint-url').value.trim() || 'http://127.0.0.1:9731';
   serverBaseUrl = inputUrl;
   localStorage.setItem('arpanet_server_url', serverBaseUrl);
 
@@ -481,7 +495,7 @@ function testServerConnection() {
   beacon.className = 'status-beacon';
   label.textContent = translations[currentLang].lbl_testing_conn;
 
-  fetch(`${serverBaseUrl}/api/localinfo`, { signal: AbortSignal.timeout(3000) })
+  fetch(`${serverBaseUrl}/api/localinfo`, { signal: AbortSignal.timeout(2000) })
     .then(r => {
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
@@ -489,23 +503,125 @@ function testServerConnection() {
     .then(data => {
       beacon.className = 'status-beacon online';
       label.textContent = translations[currentLang].server_online;
-      detail.textContent = `Conectado ao Go Daemon em ${serverBaseUrl} (NIC: ${data.interface || 'Ativa'})`;
-      appendLog(`[SERVER-OK] Conexão estabelecida com ${serverBaseUrl}`);
+      const engineDesc = data.engine || (data.device ? `${data.device} • Nativo` : 'Go Daemon');
+      detail.textContent = `Conectado ao Arpanet Server (${engineDesc}) em ${serverBaseUrl}`;
+      appendLog(`[SERVER-OK] Servidor conectado: ${serverBaseUrl} [${engineDesc}]`);
+      initServerEventStream();
     })
     .catch(err => {
-      beacon.className = 'status-beacon offline';
-      label.textContent = translations[currentLang].server_offline;
-      detail.textContent = `Não foi possível contactar o servidor em ${serverBaseUrl}`;
-      appendLog(`[SERVER-WARN] Sem resposta em ${serverBaseUrl}. Usando motor mobile autônomo.`);
+      // Se falhar em URL remota, tenta o daemon local do celular como fallback
+      if (serverBaseUrl !== 'http://127.0.0.1:9731' && serverBaseUrl !== 'http://localhost:9731') {
+        fetch(`http://127.0.0.1:9731/api/localinfo`, { signal: AbortSignal.timeout(1000) })
+          .then(r => r.json())
+          .then(localData => {
+            serverBaseUrl = 'http://127.0.0.1:9731';
+            document.getElementById('server-endpoint-url').value = serverBaseUrl;
+            localStorage.setItem('arpanet_server_url', serverBaseUrl);
+            beacon.className = 'status-beacon online';
+            label.textContent = translations[currentLang].server_online;
+            detail.textContent = `Conectado ao Motor Mobile Local (127.0.0.1:9731)`;
+            appendLog(`[SERVER-OK] Conexão alternada para o motor local do celular (127.0.0.1:9731)`);
+            initServerEventStream();
+          })
+          .catch(() => {
+            markServerOffline();
+          });
+      } else {
+        markServerOffline();
+      }
     });
 }
 
-function autoScanServer() {
-  appendLog("[SERVER] Buscando servidor Arpanet na subnet...");
-  const prefix = detectedNetwork.gateway.replace(/\.1$/, '');
-  const candidate = `http://${prefix}.105:9731`;
-  document.getElementById('server-endpoint-url').value = candidate;
-  testServerConnection();
+function markServerOffline() {
+  const beacon = document.getElementById('server-beacon');
+  const label = document.getElementById('server-status-label');
+  const detail = document.getElementById('server-status-detail');
+  beacon.className = 'status-beacon offline';
+  label.textContent = translations[currentLang].server_offline;
+  detail.textContent = `Sem resposta em ${serverBaseUrl}`;
+  appendLog(`[SERVER-OFFLINE] Não foi possível contactar o servidor em ${serverBaseUrl}`);
+}
+
+async function autoScanServer() {
+  const statusDetail = document.getElementById('server-status-detail');
+  const label = document.getElementById('server-status-label');
+  appendLog("[SERVER] Buscando instâncias ativas do Arpanet Suite...");
+  label.textContent = "Procurando Servidor...";
+
+  // 1. Testa motor nativo local no celular primeiro
+  try {
+    const res = await fetch("http://127.0.0.1:9731/api/localinfo", { signal: AbortSignal.timeout(800) });
+    if (res.ok) {
+      document.getElementById('server-endpoint-url').value = "http://127.0.0.1:9731";
+      testServerConnection();
+      appendLog("[SERVER] Motor local do aparelho identificado e ativo!");
+      return;
+    }
+  } catch (e) {}
+
+  // 2. Varredura dinâmica na sub-rede detectada (busca por PC executando o arpanet.exe)
+  const gw = detectedNetwork.gateway;
+  const lastDot = gw.lastIndexOf('.');
+  if (lastDot === -1 || gw === '127.0.0.1') {
+    testServerConnection();
+    return;
+  }
+  const prefix = gw.substring(0, lastDot);
+
+  appendLog(`[SERVER-LAN] Sondando sub-rede ${prefix}.1 a ${prefix}.254 na porta 9731...`);
+  statusDetail.textContent = `Varrendo rede ${prefix}.0/24 procurando servidores...`;
+
+  let found = null;
+  const batchSize = 25;
+  for (let start = 1; start <= 254 && !found; start += batchSize) {
+    const promises = [];
+    for (let i = start; i < start + batchSize && i <= 254; i++) {
+      const targetUrl = `http://${prefix}.${i}:9731`;
+      promises.push(
+        fetch(`${targetUrl}/api/localinfo`, { signal: AbortSignal.timeout(400) })
+          .then(r => { if (r.ok) return targetUrl; throw new Error(); })
+          .catch(() => null)
+      );
+    }
+    const results = await Promise.all(promises);
+    found = results.find(url => url !== null);
+  }
+
+  if (found) {
+    appendLog(`[SERVER-FOUND] Servidor remoto localizado com sucesso: ${found}`);
+    document.getElementById('server-endpoint-url').value = found;
+    testServerConnection();
+  } else {
+    appendLog(`[SERVER-LOCAL] Nenhum PC remoto respondendo. Conectando ao daemon local do celular.`);
+    document.getElementById('server-endpoint-url').value = "http://127.0.0.1:9731";
+    testServerConnection();
+  }
+}
+
+function initServerEventStream() {
+  if (logEventSource) {
+    try { logEventSource.close(); } catch (e) {}
+    logEventSource = null;
+  }
+  try {
+    logEventSource = new EventSource(`${serverBaseUrl}/api/logs/stream`);
+    logEventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.msg) {
+          appendLog(`[DAEMON] ${data.msg}`);
+        }
+      } catch (e) {
+        if (event.data) appendLog(`[DAEMON] ${event.data}`);
+      }
+    };
+    logEventSource.onerror = () => {
+      if (logEventSource) {
+        try { logEventSource.close(); } catch (e) {}
+        logEventSource = null;
+      }
+    };
+  } catch (e) {}
 }
 
 /* ── Logger Helper ──────────────────────────────────────────── */

@@ -4,9 +4,18 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/google/gopacket"
 )
 
 // ─── Shared types ────────────────────────────────────────────────────────────
+
+type packetHandle interface {
+	Close()
+	WritePacketData(data []byte) error
+	SetBPFFilter(filter string) error
+	Packets() <-chan gopacket.Packet
+}
 
 // Host represents a discovered network device.
 type Host struct {
@@ -15,7 +24,7 @@ type Host struct {
 	Hostname string `json:"hostname"`
 }
 
-// Iface is a pcap network interface advertised to the frontend.
+// Iface is a network interface advertised to the frontend.
 type Iface struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`

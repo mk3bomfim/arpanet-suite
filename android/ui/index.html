@@ -97,7 +97,7 @@
               <span class="auto-tag" data-i18n="tag_auto">AUTOMÁTICO</span>
             </div>
             <div class="stat-value-row">
-              <span class="stat-value font-mono c-accent" id="disp-gateway-ip">192.168.1.1</span>
+              <span class="stat-value font-mono c-accent" id="disp-gateway-ip">--</span>
               <button class="btn-copy" onclick="copyText('disp-gateway-ip')" title="Copiar Gateway">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -110,8 +110,8 @@
 
           <div class="stat-box">
             <div class="stat-label" data-i18n="lbl_subnet">FAIXA / MÁSCARA</div>
-            <div class="stat-value font-mono" id="disp-subnet-cidr">192.168.1.0/24</div>
-            <div class="stat-sub" id="disp-netmask">255.255.255.0</div>
+            <div class="stat-value font-mono" id="disp-subnet-cidr">--</div>
+            <div class="stat-sub" id="disp-netmask">--</div>
           </div>
 
           <div class="stat-box">
@@ -172,7 +172,7 @@
         <div class="form-row">
           <label class="form-label" data-i18n="lbl_target_cidr">Subnet / Faixa CIDR</label>
           <div class="input-with-button">
-            <input type="text" class="m-input font-mono" id="scan-cidr" value="192.168.1.0/24">
+            <input type="text" class="m-input font-mono" id="scan-cidr" placeholder="Ex: 192.168.0.0/24">
             <button class="btn-input-aux" onclick="useDetectedSubnet()" title="Usar Subnet Detectada">
               <span data-i18n="btn_use_auto">Auto</span>
             </button>
@@ -218,7 +218,7 @@
 
         <div class="form-row">
           <label class="form-label" data-i18n="lbl_audit_target">IP do Alvo (Target)</label>
-          <input type="text" class="m-input font-mono" id="audit-target-ip" placeholder="Ex: 192.168.1.150">
+          <input type="text" class="m-input font-mono" id="audit-target-ip" placeholder="Ex: 192.168.0.50">
         </div>
 
         <div class="form-row">
@@ -226,7 +226,7 @@
             <span data-i18n="lbl_audit_gw">IP do Gateway (Auto)</span>
             <span class="auto-tag-sm" data-i18n="tag_synced">SINCRONIZADO</span>
           </label>
-          <input type="text" class="m-input font-mono" id="audit-gateway-ip" value="192.168.1.1">
+          <input type="text" class="m-input font-mono" id="audit-gateway-ip" placeholder="Detectando Gateway...">
         </div>
 
         <div class="form-row">
@@ -283,7 +283,7 @@
 
         <div class="form-row">
           <label class="form-label" data-i18n="lbl_server_url">URL do Servidor Daemon</label>
-          <input type="text" class="m-input font-mono" id="server-endpoint-url" value="http://localhost:9731">
+          <input type="text" class="m-input font-mono" id="server-endpoint-url" value="http://127.0.0.1:9731">
         </div>
 
         <div class="server-status-box" id="server-status-indicator">

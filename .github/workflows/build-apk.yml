@@ -23,6 +23,18 @@ jobs:
         with:
           node-version: 22
 
+      - name: Setup Go for Android Cross-Compilation
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Cross-Compile Go Engine for Android ARM64
+        run: |
+          mkdir -p android/android/app/src/main/jniLibs/arm64-v8a
+          CGO_ENABLED=0 GOOS=android GOARCH=arm64 go build -ldflags="-s -w" -o android/android/app/src/main/jniLibs/arm64-v8a/libarpanet.so .
+          cp android/android/app/src/main/jniLibs/arm64-v8a/libarpanet.so ./arpanet-arm64
+          chmod +x ./arpanet-arm64
+
       - name: Install Dependencies & Sync Capacitor
         run: |
           cd android
@@ -40,6 +52,13 @@ jobs:
         with:
           name: arpanet-suite-apk
           path: android/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
+
+      - name: Upload Go Android ARM64 Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: arpanet-arm64-binary
+          path: ./arpanet-arm64
           retention-days: 14
 
   build-windows:

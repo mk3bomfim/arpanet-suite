@@ -5,46 +5,78 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
 )
 
 // ─── Interface discovery ──────────────────────────────────────────────────────
 
-// listInterfaces returns all pcap interfaces that have at least one IPv4 address.
+// listInterfaces returns all pcap interfaces that have at least one IPv4 address,
+// with graceful fallback to net.Interfaces().
 func listInterfaces() ([]Iface, error) {
-	devs, err := pcap.FindAllDevs()
-	if err != nil {
-		return nil, fmt.Errorf("pcap.FindAllDevs: %w", err)
-	}
 	var out []Iface
-	for _, d := range devs {
-		var addrs []string
-		for _, a := range d.Addresses {
-			if a.IP.To4() != nil {
-				addrs = append(addrs, a.IP.String())
+	devs, err := pcapFindAllDevs()
+	if err == nil && len(devs) > 0 {
+		for _, d := range devs {
+			var addrs []string
+			for _, a := range d.Addresses {
+				if a.IP.To4() != nil {
+					addrs = append(addrs, a.IP.String())
+				}
 			}
+			if len(addrs) == 0 {
+				continue
+			}
+			out = append(out, Iface{
+				Name:        d.Name,
+				Description: d.Description,
+				Addresses:   addrs,
+			})
 		}
-		if len(addrs) == 0 {
+	}
+	if len(out) > 0 {
+		return out, nil
+	}
+
+	// Fallback to standard net.Interfaces()
+	netIfaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	for _, ni := range netIfaces {
+		if (ni.Flags&net.FlagUp) == 0 || (ni.Flags&net.FlagLoopback) != 0 {
 			continue
 		}
-		out = append(out, Iface{
-			Name:        d.Name,
-			Description: d.Description,
-			Addresses:   addrs,
-		})
+		addrs, err := ni.Addrs()
+		if err != nil {
+			continue
+		}
+		var ipAddrs []string
+		for _, a := range addrs {
+			if ipNet, ok := a.(*net.IPNet); ok && ipNet.IP.To4() != nil {
+				ipAddrs = append(ipAddrs, ipNet.IP.String())
+			}
+		}
+		if len(ipAddrs) > 0 {
+			out = append(out, Iface{
+				Name:        ni.Name,
+				Description: ni.Name,
+				Addresses:   ipAddrs,
+			})
+		}
 	}
 	return out, nil
 }
 
-// getLocalInfo returns the local IPv4 and MAC for the given pcap interface name,
+// getLocalInfo returns the local IPv4 and MAC for the given interface name,
 // plus the network CIDR (e.g. "192.168.1.0/24").
 func getLocalInfo(pcapName string) (ip net.IP, mac net.HardwareAddr, cidr string, err error) {
-	devs, _ := pcap.FindAllDevs()
+	devs, _ := pcapFindAllDevs()
 
 	var pcapIP net.IP
 	var pcapMask net.IPMask
@@ -61,31 +93,46 @@ func getLocalInfo(pcapName string) (ip net.IP, mac net.HardwareAddr, cidr string
 			}
 		}
 	}
-	if pcapIP == nil {
-		err = fmt.Errorf("no IPv4 address found on interface %q", pcapName)
-		return
-	}
 
-	// Cross-reference with net.Interfaces to find MAC
-	netIfaces, _ := net.Interfaces()
-	for _, ni := range netIfaces {
-		if ni.HardwareAddr == nil {
-			continue
-		}
-		addrs, _ := ni.Addrs()
-		for _, a := range addrs {
-			if ipNet, ok := a.(*net.IPNet); ok && ipNet.IP.To4() != nil {
-				if ipNet.IP.To4().Equal(pcapIP) {
-					ones, _ := pcapMask.Size()
-					network := pcapIP.Mask(pcapMask)
-					cidr = fmt.Sprintf("%s/%d", network.String(), ones)
-					return pcapIP, ni.HardwareAddr, cidr, nil
+	if pcapIP != nil {
+		// Cross-reference with net.Interfaces to find MAC
+		netIfaces, _ := net.Interfaces()
+		for _, ni := range netIfaces {
+			if ni.HardwareAddr == nil {
+				continue
+			}
+			addrs, _ := ni.Addrs()
+			for _, a := range addrs {
+				if ipNet, ok := a.(*net.IPNet); ok && ipNet.IP.To4() != nil {
+					if ipNet.IP.To4().Equal(pcapIP) {
+						ones, _ := pcapMask.Size()
+						network := pcapIP.Mask(pcapMask)
+						cidr = fmt.Sprintf("%s/%d", network.String(), ones)
+						return pcapIP, ni.HardwareAddr, cidr, nil
+					}
 				}
 			}
 		}
 	}
 
-	err = fmt.Errorf("could not resolve MAC for pcap interface %q", pcapName)
+	// Fallback directly to net.Interfaces()
+	netIfaces, _ := net.Interfaces()
+	for _, ni := range netIfaces {
+		if pcapName != "" && ni.Name != pcapName {
+			continue
+		}
+		addrs, _ := ni.Addrs()
+		for _, a := range addrs {
+			if ipNet, ok := a.(*net.IPNet); ok && ipNet.IP.To4() != nil && !ipNet.IP.IsLoopback() {
+				ones, _ := ipNet.Mask.Size()
+				network := ipNet.IP.To4().Mask(ipNet.Mask)
+				cidr = fmt.Sprintf("%s/%d", network.String(), ones)
+				return ipNet.IP.To4(), ni.HardwareAddr, cidr, nil
+			}
+		}
+	}
+
+	err = fmt.Errorf("could not resolve IP/MAC for interface %q", pcapName)
 	return
 }
 
@@ -103,9 +150,10 @@ func scanNetwork(ifaceName, cidr string, logFn func(string)) ([]Host, error) {
 		return nil, err
 	}
 
-	handle, err := pcap.OpenLive(ifaceName, 65536, true, 500*time.Millisecond)
+	handle, err := pcapOpenLive(ifaceName, 65536, true, 500*time.Millisecond)
 	if err != nil {
-		return nil, fmt.Errorf("pcap open: %w", err)
+		logFn(fmt.Sprintf("pcap indisponível (%v) — acionando varredura nativa por sockets...", err))
+		return scanNetworkSockets(ipNet, logFn)
 	}
 	defer handle.Close()
 
@@ -115,38 +163,42 @@ func scanNetwork(ifaceName, cidr string, logFn func(string)) ([]Host, error) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		src := gopacket.NewPacketSource(handle, handle.LinkType())
+		packetsChan := handle.Packets()
 		deadline := time.After(7 * time.Second)
 		for {
 			select {
-			case pkt, ok := <-src.Packets():
+			case <-deadline:
+				return
+			case pkt, ok := <-packetsChan:
 				if !ok {
 					return
 				}
-				l := pkt.Layer(layers.LayerTypeARP)
-				if l == nil {
+				arpLayer := pkt.Layer(layers.LayerTypeARP)
+				if arpLayer == nil {
 					continue
 				}
-				arp := l.(*layers.ARP)
+				arp := arpLayer.(*layers.ARP)
 				if arp.Operation != layers.ARPReply {
 					continue
 				}
-				ip := net.IP(arp.SourceProtAddress).String()
-				mac := net.HardwareAddr(arp.SourceHwAddress).String()
-				if _, loaded := hostMap.LoadOrStore(ip, mac); !loaded {
-					logFn(fmt.Sprintf("● %s  →  %s", ip, mac))
+				srcIP := net.IP(arp.SourceProtAddress).String()
+				srcMAC := net.HardwareAddr(arp.SourceHwAddress).String()
+				if srcIP == localIP.String() {
+					continue
 				}
-			case <-deadline:
-				return
+				if _, exists := hostMap.LoadOrStore(srcIP, srcMAC); !exists {
+					logFn(fmt.Sprintf("Found %s → %s", srcIP, srcMAC))
+				}
 			}
 		}
 	}()
 
-	// Send ARP requests
-	allIPs := enumIPs(ipNet)
-	logFn(fmt.Sprintf("Sweeping %s — %d addresses", cidr, len(allIPs)))
-	for _, target := range allIPs {
-		_ = sendARPRequest(handle, localMAC, localIP, target)
+	// Send who-has to every usable IP in CIDR
+	for _, ip := range enumIPs(ipNet) {
+		if ip.Equal(localIP) {
+			continue
+		}
+		_ = sendARPRequest(handle, localMAC, localIP, ip)
 		time.Sleep(3 * time.Millisecond)
 	}
 
@@ -163,8 +215,97 @@ func scanNetwork(ifaceName, cidr string, logFn func(string)) ([]Host, error) {
 		hosts = append(hosts, Host{IP: hIP, MAC: hMAC, Hostname: hostname})
 		return true
 	})
+
+	if len(hosts) == 0 {
+		return scanNetworkSockets(ipNet, logFn)
+	}
+
 	logFn(fmt.Sprintf("Done — %d hosts found", len(hosts)))
 	return hosts, nil
+}
+
+// scanNetworkSockets provides a pure-Go socket & ARP table scanner fallback.
+func scanNetworkSockets(ipNet *net.IPNet, logFn func(string)) ([]Host, error) {
+	logFn("Iniciando sondagem de portas e resolução ARP...")
+	var ips []string
+	for _, ip := range enumIPs(ipNet) {
+		ips = append(ips, ip.String())
+	}
+
+	var wg sync.WaitGroup
+	limiter := make(chan struct{}, 40)
+	for _, ipStr := range ips {
+		wg.Add(1)
+		limiter <- struct{}{}
+		go func(target string) {
+			defer wg.Done()
+			defer func() { <-limiter }()
+			conn, err := net.DialTimeout("tcp", target+":80", 250*time.Millisecond)
+			if err == nil {
+				conn.Close()
+				return
+			}
+			conn, err = net.DialTimeout("tcp", target+":443", 250*time.Millisecond)
+			if err == nil {
+				conn.Close()
+			}
+		}(ipStr)
+	}
+	wg.Wait()
+
+	hosts := parseSystemARPTable()
+	logFn(fmt.Sprintf("Varredura de sockets concluída — %d hosts ativos", len(hosts)))
+	return hosts, nil
+}
+
+// parseSystemARPTable extracts live neighbors from the kernel.
+func parseSystemARPTable() []Host {
+	var hosts []Host
+	seen := make(map[string]bool)
+
+	// 1. Linux / Android: /proc/net/arp
+	if out, err := exec.Command("cat", "/proc/net/arp").Output(); err == nil {
+		lines := strings.Split(string(out), "\n")
+		for _, line := range lines[1:] {
+			fields := strings.Fields(line)
+			if len(fields) >= 4 && fields[3] != "00:00:00:00:00:00" {
+				ip := fields[0]
+				mac := fields[3]
+				if !seen[ip] {
+					seen[ip] = true
+					var hostname string
+					if names, err := net.LookupAddr(ip); err == nil && len(names) > 0 {
+						hostname = names[0]
+					}
+					hosts = append(hosts, Host{IP: ip, MAC: mac, Hostname: hostname})
+				}
+			}
+		}
+	}
+
+	// 2. Windows: arp -a
+	if len(hosts) == 0 {
+		if out, err := exec.Command("arp", "-a").Output(); err == nil {
+			lines := strings.Split(string(out), "\n")
+			for _, line := range lines {
+				fields := strings.Fields(line)
+				if len(fields) >= 3 && strings.Contains(fields[1], "-") {
+					ip := fields[0]
+					mac := strings.ReplaceAll(fields[1], "-", ":")
+					if !seen[ip] && !strings.HasPrefix(ip, "224.") && !strings.HasPrefix(ip, "239.") && !strings.HasPrefix(ip, "255.") {
+						seen[ip] = true
+						var hostname string
+						if names, err := net.LookupAddr(ip); err == nil && len(names) > 0 {
+							hostname = names[0]
+						}
+						hosts = append(hosts, Host{IP: ip, MAC: mac, Hostname: hostname})
+					}
+				}
+			}
+		}
+	}
+
+	return hosts
 }
 
 // ─── Spoof session ───────────────────────────────────────────────────────────
@@ -186,7 +327,7 @@ func startSpoof(ifaceName, targetIP, gatewayIP string, forward bool, logFn func(
 		return nil, err
 	}
 
-	handle, err := pcap.OpenLive(ifaceName, 65536, true, 500*time.Millisecond)
+	handle, err := pcapOpenLive(ifaceName, 65536, true, 500*time.Millisecond)
 	if err != nil {
 		return nil, fmt.Errorf("pcap open: %w", err)
 	}
@@ -294,7 +435,7 @@ func killAll(ifaceName, gatewayIP string, hosts []Host, logFn func(string)) []*S
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 // resolveMAC sends an ARP request and waits up to 4 s for the reply.
-func resolveMAC(handle *pcap.Handle, srcMAC net.HardwareAddr, srcIP, dstIP net.IP, logFn func(string)) (net.HardwareAddr, error) {
+func resolveMAC(handle packetHandle, srcMAC net.HardwareAddr, srcIP, dstIP net.IP, logFn func(string)) (net.HardwareAddr, error) {
 	// Try OS ARP cache first via arp -a
 	if mac := arpCacheLookup(dstIP.String()); mac != nil {
 		logFn(fmt.Sprintf("  cache hit %s → %s", dstIP, mac))
@@ -303,13 +444,13 @@ func resolveMAC(handle *pcap.Handle, srcMAC net.HardwareAddr, srcIP, dstIP net.I
 
 	_ = sendARPRequest(handle, srcMAC, srcIP, dstIP)
 
-	src := gopacket.NewPacketSource(handle, handle.LinkType())
+	packetsChan := handle.Packets()
 	timeout := time.NewTimer(4 * time.Second)
 	defer timeout.Stop()
 
 	for {
 		select {
-		case pkt, ok := <-src.Packets():
+		case pkt, ok := <-packetsChan:
 			if !ok {
 				return nil, fmt.Errorf("pcap channel closed")
 			}
@@ -347,7 +488,7 @@ func arpCacheLookup(ip string) net.HardwareAddr {
 }
 
 // sendARPRequest broadcasts ARP who-has for dstIP.
-func sendARPRequest(handle *pcap.Handle, srcMAC net.HardwareAddr, srcIP, dstIP net.IP) error {
+func sendARPRequest(handle packetHandle, srcMAC net.HardwareAddr, srcIP, dstIP net.IP) error {
 	eth := layers.Ethernet{
 		SrcMAC:       srcMAC,
 		DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
@@ -373,7 +514,7 @@ func sendARPRequest(handle *pcap.Handle, srcMAC net.HardwareAddr, srcIP, dstIP n
 }
 
 // sendARPReply sends a gratuitous ARP reply (the poisoning packet).
-func sendARPReply(handle *pcap.Handle, srcMAC, dstMAC net.HardwareAddr, srcIP, dstIP net.IP) error {
+func sendARPReply(handle packetHandle, srcMAC, dstMAC net.HardwareAddr, srcIP, dstIP net.IP) error {
 	eth := layers.Ethernet{
 		SrcMAC:       srcMAC,
 		DstMAC:       dstMAC,

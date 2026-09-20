@@ -22,6 +22,7 @@ func startServer(port int, static fs.FS) error {
 	mux.HandleFunc("/api/spoof/stop", withCORS(handleSpoofStop))
 	mux.HandleFunc("/api/dos/start", withCORS(handleDosStart))
 	mux.HandleFunc("/api/dos/stop", withCORS(handleDosStop))
+	mux.HandleFunc("/api/killall", withCORS(handleKillAllStart))
 	mux.HandleFunc("/api/killall/start", withCORS(handleKillAllStart))
 	mux.HandleFunc("/api/killall/stop", withCORS(handleKillAllStop))
 	mux.HandleFunc("/api/capture/start", withCORS(handleCaptureStart))
@@ -79,20 +80,53 @@ func handleInterfaces(w http.ResponseWriter, r *http.Request) {
 func handleLocalInfo(w http.ResponseWriter, r *http.Request) {
 	iface := r.URL.Query().Get("iface")
 	if iface == "" {
-		jsonErr(w, "missing iface", 400)
+		ifaces, err := listInterfaces()
+		if err == nil && len(ifaces) > 0 {
+			iface = ifaces[0].Name
+		}
+	}
+	gw := getDefaultGateway()
+	if iface == "" {
+		cidr := "127.0.0.1/32"
+		if gw != "" {
+			parts := strings.Split(gw, ".")
+			if len(parts) == 4 {
+				cidr = fmt.Sprintf("%s.%s.%s.0/24", parts[0], parts[1], parts[2])
+			}
+		}
+		jsonOK(w, map[string]string{
+			"ip":        "127.0.0.1",
+			"mac":       "00:00:00:00:00:00",
+			"cidr":      cidr,
+			"gw":        gw,
+			"interface": "auto",
+		})
 		return
 	}
 	ip, mac, cidr, err := getLocalInfo(iface)
 	if err != nil {
-		jsonErr(w, err.Error(), 500)
+		cidr := "127.0.0.1/32"
+		if gw != "" {
+			parts := strings.Split(gw, ".")
+			if len(parts) == 4 {
+				cidr = fmt.Sprintf("%s.%s.%s.0/24", parts[0], parts[1], parts[2])
+			}
+		}
+		jsonOK(w, map[string]string{
+			"ip":        "127.0.0.1",
+			"mac":       "00:00:00:00:00:00",
+			"cidr":      cidr,
+			"gw":        gw,
+			"interface": iface,
+		})
 		return
 	}
-	gw := getDefaultGateway()
 	jsonOK(w, map[string]string{
-		"ip":   ip.String(),
-		"mac":  mac.String(),
-		"cidr": cidr,
-		"gw":   gw,
+		"ip":        ip.String(),
+		"mac":       mac.String(),
+		"cidr":      cidr,
+		"gw":        gw,
+		"interface": iface,
 	})
 }
 
@@ -110,8 +144,33 @@ func handleScan(w http.ResponseWriter, r *http.Request) {
 		Iface string `json:"iface"`
 		CIDR  string `json:"cidr"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Iface == "" || req.CIDR == "" {
-		jsonErr(w, "invalid body: need iface + cidr", 400)
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	if req.Iface == "" {
+		ifaces, err := listInterfaces()
+		if err == nil && len(ifaces) > 0 {
+			req.Iface = ifaces[0].Name
+		}
+	}
+	if req.CIDR == "" && req.Iface != "" {
+		_, _, cidr, err := getLocalInfo(req.Iface)
+		if err == nil && cidr != "" {
+			req.CIDR = cidr
+		}
+	}
+	if req.CIDR == "" {
+		gw := getDefaultGateway()
+		if gw != "" {
+			parts := strings.Split(gw, ".")
+			if len(parts) == 4 {
+				req.CIDR = fmt.Sprintf("%s.%s.%s.0/24", parts[0], parts[1], parts[2])
+			}
+		}
+	}
+	if req.Iface == "" {
+		req.Iface = "auto"
+	}
+	if req.CIDR == "" {
+		jsonErr(w, "could not determine network cidr", 400)
 		return
 	}
 
@@ -140,10 +199,27 @@ func handleSpoofStart(w http.ResponseWriter, r *http.Request) {
 		Iface     string `json:"iface"`
 		TargetIP  string `json:"target_ip"`
 		GatewayIP string `json:"gateway_ip"`
+		Target    string `json:"target"`
+		Gateway   string `json:"gateway"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		jsonErr(w, "invalid body", 400)
 		return
+	}
+	if req.TargetIP == "" && req.Target != "" {
+		req.TargetIP = req.Target
+	}
+	if req.GatewayIP == "" && req.Gateway != "" {
+		req.GatewayIP = req.Gateway
+	}
+	if req.GatewayIP == "" {
+		req.GatewayIP = getDefaultGateway()
+	}
+	if req.Iface == "" {
+		ifaces, err := listInterfaces()
+		if err == nil && len(ifaces) > 0 {
+			req.Iface = ifaces[0].Name
+		}
 	}
 	if req.Iface == "" || req.TargetIP == "" || req.GatewayIP == "" {
 		jsonErr(w, "need iface, target_ip, gateway_ip", 400)
@@ -158,7 +234,6 @@ func handleSpoofStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Also start capture so traffic tab populates
 	capFn := func(p PacketInfo) {
 		atomic.AddInt64(&app.pktCount, 1)
 		app.packets.Emit(p)
@@ -196,9 +271,30 @@ func handleDosStart(w http.ResponseWriter, r *http.Request) {
 		Iface     string `json:"iface"`
 		TargetIP  string `json:"target_ip"`
 		GatewayIP string `json:"gateway_ip"`
+		Target    string `json:"target"`
+		Gateway   string `json:"gateway"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		jsonErr(w, "invalid body", 400)
+		return
+	}
+	if req.TargetIP == "" && req.Target != "" {
+		req.TargetIP = req.Target
+	}
+	if req.GatewayIP == "" && req.Gateway != "" {
+		req.GatewayIP = req.Gateway
+	}
+	if req.GatewayIP == "" {
+		req.GatewayIP = getDefaultGateway()
+	}
+	if req.Iface == "" {
+		ifaces, err := listInterfaces()
+		if err == nil && len(ifaces) > 0 {
+			req.Iface = ifaces[0].Name
+		}
+	}
+	if req.Iface == "" || req.TargetIP == "" || req.GatewayIP == "" {
+		jsonErr(w, "need iface, target_ip, gateway_ip", 400)
 		return
 	}
 
@@ -218,22 +314,40 @@ func handleDosStart(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDosStop(w http.ResponseWriter, r *http.Request) {
-	handleSpoofStop(w, r) // same teardown
+	handleSpoofStop(w, r)
 }
 
 func handleKillAllStart(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Iface     string `json:"iface"`
 		GatewayIP string `json:"gateway_ip"`
+		Gateway   string `json:"gateway"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonErr(w, "invalid body", 400)
-		return
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	if req.GatewayIP == "" && req.Gateway != "" {
+		req.GatewayIP = req.Gateway
+	}
+	if req.GatewayIP == "" {
+		req.GatewayIP = getDefaultGateway()
+	}
+	if req.Iface == "" {
+		ifaces, err := listInterfaces()
+		if err == nil && len(ifaces) > 0 {
+			req.Iface = ifaces[0].Name
+		}
 	}
 
 	app.mu.RLock()
 	hosts := app.hosts
 	app.mu.RUnlock()
+
+	if len(hosts) == 0 && req.Iface != "" {
+		_, _, cidr, err := getLocalInfo(req.Iface)
+		if err == nil && cidr != "" {
+			scanned, _ := scanNetwork(req.Iface, cidr, func(msg string) {})
+			hosts = scanned
+		}
+	}
 
 	if len(hosts) == 0 {
 		jsonErr(w, "no hosts — run a scan first", 400)
