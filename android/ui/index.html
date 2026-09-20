@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Arpanet Suite Mobile</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ── Top Mobile App Bar ──────────────────────────────────── -->
+  <header class="app-bar">
+    <div class="brand-group">
+      <svg class="brand-icon" viewBox="0 0 453 456">
+        <path d="M 229 198 L 157 236 L 153 284 L 26 353 L 191 455 L 193 369 L 138 335 L 227 286 L 314 334 L 258 367 L 257 454 L 427 355 L 298 282 L 297 237 Z M 317 156 L 317 214 L 381 251 L 382 295 L 445 331 L 452 333 L 451 230 Z M 136 156 L 0 231 L 0 334 L 9 331 L 71 295 L 72 251 L 135 214 Z M 195 13 L 187 16 L 115 62 L 114 145 L 149 122 L 153 122 L 153 212 L 195 187 Z M 228 0 L 228 47 L 257 71 L 257 186 L 301 212 L 302 121 L 341 145 L 342 55 L 261 0 Z" fill-rule="evenodd"/>
+      </svg>
+      <div>
+        <div class="brand-title">Arpanet Suite</div>
+        <div class="brand-subtitle">Mobile Edition &bull; v2.0.0</div>
+      </div>
+    </div>
+
+    <div class="app-bar-actions">
+      <!-- Language Pill -->
+      <div class="lang-pill">
+        <button class="lang-opt active" id="btn-pt" onclick="setLanguage('pt')">PT</button>
+        <button class="lang-opt" id="btn-en" onclick="setLanguage('en')">EN</button>
+      </div>
+      <!-- Theme Toggle -->
+      <button class="btn-round" onclick="toggleTheme()" aria-label="Tema">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Scrollable View Container ───────────────────────────── -->
+  <main class="mobile-viewport">
+
+    <!-- ── View 1: Dispositivo & Rede (Device & Gateway) ───────── -->
+    <section class="tab-pane active" id="pane-device">
+      
+      <!-- Primary Device & Auto-Gateway Showcase Card -->
+      <div class="m-card highlight-card">
+        <div class="card-badge-row">
+          <span class="badge-status-dot"></span>
+          <span class="badge-text" data-i18n="badge_device_ready">APARELHO CONECTADO</span>
+        </div>
+
+        <div class="device-hero">
+          <div class="device-icon-box">
+            <!-- Android Phone Vector -->
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4126 13.8563 8 12 8s-3.5902.4126-5.1368 1.1507L4.8409 5.6477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="device-name" id="disp-device-name">Identificando Aparelho...</h1>
+            <div class="device-model-meta" id="disp-device-meta">Android Native Environment</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Automated Gateway & IP Grid -->
+        <div class="network-stat-grid">
+          
+          <div class="stat-box">
+            <div class="stat-label" data-i18n="lbl_local_ip">IP DO CELULAR</div>
+            <div class="stat-value-row">
+              <span class="stat-value font-mono" id="disp-device-ip">127.0.0.1</span>
+              <button class="btn-copy" onclick="copyText('disp-device-ip')" title="Copiar IP">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
+            <div class="stat-sub" data-i18n="lbl_dhcp_assigned">Atribuído via DHCP</div>
+          </div>
+
+          <div class="stat-box primary-stat">
+            <div class="stat-label">
+              <span data-i18n="lbl_gateway">GATEWAY (ROTEADOR)</span>
+              <span class="auto-tag" data-i18n="tag_auto">AUTOMÁTICO</span>
+            </div>
+            <div class="stat-value-row">
+              <span class="stat-value font-mono c-accent" id="disp-gateway-ip">192.168.1.1</span>
+              <button class="btn-copy" onclick="copyText('disp-gateway-ip')" title="Copiar Gateway">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
+            <div class="stat-sub" id="disp-gateway-type" data-i18n="lbl_detected_route">Rota Padrão Wi-Fi</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-label" data-i18n="lbl_subnet">FAIXA / MÁSCARA</div>
+            <div class="stat-value font-mono" id="disp-subnet-cidr">192.168.1.0/24</div>
+            <div class="stat-sub" id="disp-netmask">255.255.255.0</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-label" data-i18n="lbl_connection">REDE WI-FI (SSID)</div>
+            <div class="stat-value" id="disp-wifi-ssid">Conectado</div>
+            <div class="stat-sub" id="disp-wifi-status" data-i18n="lbl_status_online">Link Ativo &bull; Pronto</div>
+          </div>
+
+        </div>
+
+        <button class="btn-m-action" onclick="refreshNetworkInfo()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M23 4v6h-6"/>
+            <path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          <span data-i18n="btn_sync_network">Sincronizar IP & Gateway</span>
+        </button>
+      </div>
+
+      <!-- Quick Action Cards -->
+      <div class="action-grid-two">
+        <div class="quick-card" onclick="switchTab('pane-scan')">
+          <div class="quick-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <div class="quick-card-title" data-i18n="title_quick_scan">Varredura ARP</div>
+          <div class="quick-card-desc" data-i18n="desc_quick_scan">Mapear todos os aparelhos ativos na faixa</div>
+        </div>
+
+        <div class="quick-card" onclick="switchTab('pane-audit')">
+          <div class="quick-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <div class="quick-card-title" data-i18n="title_quick_audit">Auditoria MitM</div>
+          <div class="quick-card-desc" data-i18n="desc_quick_audit">Inspecionar e isolar nós do gateway</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── View 2: Varredura ARP (Scan) ────────────────────────── -->
+    <section class="tab-pane" id="pane-scan">
+      <div class="m-card">
+        <div class="pane-header">
+          <div>
+            <h2 class="pane-title" data-i18n="title_scan">Varredura de Rede ARP</h2>
+            <div class="pane-subtitle" data-i18n="sub_scan">Descoberta instantânea de dispositivos locais</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" data-i18n="lbl_target_cidr">Subnet / Faixa CIDR</label>
+          <div class="input-with-button">
+            <input type="text" class="m-input font-mono" id="scan-cidr" value="192.168.1.0/24">
+            <button class="btn-input-aux" onclick="useDetectedSubnet()" title="Usar Subnet Detectada">
+              <span data-i18n="btn_use_auto">Auto</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-m-action primary" id="btn-run-scan" onclick="runNetworkScan()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span data-i18n="btn_start_scan">Iniciar Varredura</span>
+        </button>
+
+        <div class="scan-status-row">
+          <span id="scan-status-text" data-i18n="scan_ready">Pronto para varrer</span>
+          <span class="scan-count-badge font-mono" id="scan-count">0 hosts</span>
+        </div>
+
+        <!-- Host Results List -->
+        <div class="host-cards-list" id="host-results-container">
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div data-i18n="empty_scan">Toque em "Iniciar Varredura" para mapear os nós da rede local.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── View 3: Auditoria / Spoof ───────────────────────────── -->
+    <section class="tab-pane" id="pane-audit">
+      <div class="m-card">
+        <div class="pane-header">
+          <div>
+            <h2 class="pane-title" data-i18n="title_audit">Auditoria & Spoofing</h2>
+            <div class="pane-subtitle" data-i18n="sub_audit">Controle de pacotes ARP e isolamento</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" data-i18n="lbl_audit_target">IP do Alvo (Target)</label>
+          <input type="text" class="m-input font-mono" id="audit-target-ip" placeholder="Ex: 192.168.1.150">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">
+            <span data-i18n="lbl_audit_gw">IP do Gateway (Auto)</span>
+            <span class="auto-tag-sm" data-i18n="tag_synced">SINCRONIZADO</span>
+          </label>
+          <input type="text" class="m-input font-mono" id="audit-gateway-ip" value="192.168.1.1">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" data-i18n="lbl_audit_mode">Modo de Operação</label>
+          <div class="mode-selector">
+            <button class="mode-btn active" id="btn-mode-mitm" onclick="selectAuditMode('mitm')">
+              <div class="mode-btn-title" data-i18n="mode_mitm_title">Intercepção MitM</div>
+              <div class="mode-btn-desc" data-i18n="mode_mitm_desc">Com repasse de pacotes IP</div>
+            </button>
+            <button class="mode-btn" id="btn-mode-dos" onclick="selectAuditMode('dos')">
+              <div class="mode-btn-title" data-i18n="mode_dos_title">Isolamento DoS</div>
+              <div class="mode-btn-desc" data-i18n="mode_dos_desc">Sem repasse (corta tráfego)</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="audit-buttons-row">
+          <button class="btn-m-action primary" id="btn-start-audit" onclick="startAuditOperation()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <span data-i18n="btn_engage">Iniciar Auditoria</span>
+          </button>
+          <button class="btn-m-action secondary" id="btn-stop-audit" onclick="stopAuditOperation()" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="6" y="6" width="12" height="12"/>
+            </svg>
+            <span data-i18n="btn_cease">Interromper</span>
+          </button>
+        </div>
+
+        <div class="danger-zone">
+          <button class="btn-danger-kill" onclick="triggerKillAll()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span data-i18n="btn_kill_all">DERRUBAR TODA A REDE (KILL ALL)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── View 4: Servidor & Link Go ──────────────────────────── -->
+    <section class="tab-pane" id="pane-server">
+      <div class="m-card">
+        <div class="pane-header">
+          <div>
+            <h2 class="pane-title" data-i18n="title_backend">Servidor Arpanet Suite</h2>
+            <div class="pane-subtitle" data-i18n="sub_backend">Conexão com o backend de pacotes raw (Go)</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" data-i18n="lbl_server_url">URL do Servidor Daemon</label>
+          <input type="text" class="m-input font-mono" id="server-endpoint-url" value="http://localhost:9731">
+        </div>
+
+        <div class="server-status-box" id="server-status-indicator">
+          <div class="status-icon-row">
+            <span class="status-beacon" id="server-beacon"></span>
+            <span class="status-name" id="server-status-label" data-i18n="lbl_testing_conn">Verificando Servidor...</span>
+          </div>
+          <div class="status-detail font-mono" id="server-status-detail">Tentando comunicação HTTP em /api/localinfo</div>
+        </div>
+
+        <div class="audit-buttons-row">
+          <button class="btn-m-action" onclick="testServerConnection()">
+            <span data-i18n="btn_test_conn">Testar Conexão</span>
+          </button>
+          <button class="btn-m-action secondary" onclick="autoScanServer()">
+            <span data-i18n="btn_auto_discover">Auto-Descobrir na Rede</span>
+          </button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="console-box">
+          <div class="console-title font-mono" data-i18n="lbl_live_telemetry">TELEMETRIA EM TEMPO REAL</div>
+          <div class="console-terminal font-mono" id="mobile-logs-terminal">
+            <div>[00:00:00] Arpanet Mobile Runtime inicializado.</div>
+            <div>[00:00:00] Aguardando comandos ou conexões ativas.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Bottom Mobile Navigation Bar ────────────────────────── -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" onclick="switchTab('pane-device')" id="nav-btn-device">
+      <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+        <line x1="12" y1="18" x2="12.01" y2="18"/>
+      </svg>
+      <span class="nav-tab-label" data-i18n="tab_device">Aparelho</span>
+    </button>
+
+    <button class="nav-tab" onclick="switchTab('pane-scan')" id="nav-btn-scan">
+      <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="6"/>
+        <circle cx="12" cy="12" r="2"/>
+      </svg>
+      <span class="nav-tab-label" data-i18n="tab_scan">Varredura</span>
+    </button>
+
+    <button class="nav-tab" onclick="switchTab('pane-audit')" id="nav-btn-audit">
+      <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      <span class="nav-tab-label" data-i18n="tab_audit">Auditoria</span>
+    </button>
+
+    <button class="nav-tab" onclick="switchTab('pane-server')" id="nav-btn-server">
+      <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+        <line x1="6" y1="6" x2="6.01" y2="6"/>
+        <line x1="6" y1="18" x2="6.01" y2="18"/>
+      </svg>
+      <span class="nav-tab-label" data-i18n="tab_server">Servidor</span>
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>

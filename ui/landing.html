@@ -1,41 +1,47 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Arpanet Suite — Download APK & Windows Executable</title>
-  <meta name="description" content="Arpanet Suite — Autonomous Layer-2 Network Security Auditing. Download for Windows 11 and Android.">
+  <title>Arpanet Suite — Download Windows & Android</title>
+  <meta name="description" content="Arpanet Suite v2.0.0 — Download oficial para Windows (.exe) e Android (.apk). Auditoria e diagnóstico de rede Layer-2.">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='104' fill='%23000000'/%3E%3Cg transform='translate(85.13 84) scale(0.754386)'%3E%3Cpath d='M 229 198 L 157 236 L 153 284 L 26 353 L 191 455 L 193 369 L 138 335 L 227 286 L 314 334 L 258 367 L 257 454 L 427 355 L 298 282 L 297 237 Z M 317 156 L 317 214 L 381 251 L 382 295 L 445 331 L 452 333 L 451 230 Z M 136 156 L 0 231 L 0 334 L 9 331 L 71 295 L 72 251 L 135 214 Z M 195 13 L 187 16 L 115 62 L 114 145 L 149 122 L 153 122 L 153 212 L 195 187 Z M 228 0 L 228 47 L 257 71 L 257 186 L 301 212 L 302 121 L 341 145 L 342 55 L 261 0 Z' fill='%23FFFFFF' fill-rule='evenodd'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #000000;
       --fg: #ffffff;
       --surface: #0a0a0c;
-      --surface-card: #131418;
-      --border: #ffffff;
-      --border-subtle: #232429;
-      --muted: #8b8e99;
-      --font-display: 'Space Grotesk', sans-serif;
+      --surface-card: #121317;
+      --surface-elevated: #1a1c23;
+      --border: #27272a;
+      --border-hover: #ffffff;
+      --muted: #a1a1aa;
+      --muted-dark: #52525b;
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
       --radius-sm: 10px;
       --radius-md: 18px;
-      --radius-lg: 28px;
+      --radius-lg: 26px;
       --radius-full: 9999px;
+      --glow: rgba(255, 255, 255, 0.08);
       --transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      --bounce: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      --bounce: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     [data-theme="light"] {
-      --bg: #f8f9fa;
-      --fg: #0a0a0a;
+      --bg: #f8fafc;
+      --fg: #09090b;
       --surface: #ffffff;
       --surface-card: #ffffff;
-      --border: #0a0a0a;
-      --border-subtle: #dfe3e8;
-      --muted: #6c727c;
+      --surface-elevated: #f1f5f9;
+      --border: #e2e8f0;
+      --border-hover: #09090b;
+      --muted: #64748b;
+      --muted-dark: #94a3b8;
+      --glow: rgba(0, 0, 0, 0.05);
     }
 
     *, *::before, *::after {
@@ -47,22 +53,81 @@
     body {
       background: var(--bg);
       color: var(--fg);
-      font-family: var(--font-display);
+      font-family: var(--font-main);
       line-height: 1.5;
       overflow-x: hidden;
-      transition: background 0.25s, color 0.25s;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
       -webkit-font-smoothing: antialiased;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
-    /* ── Navigation ────────────────────────────────────────────── */
+    /* ── Interactive Particle Background Canvas ───────────────── */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    /* Ambient radial glow in background */
+    .ambient-glow {
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 650px;
+      height: 650px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(50px);
+      animation: ambientPulse 8s ease-in-out infinite alternate;
+    }
+
+    [data-theme="light"] .ambient-glow {
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0) 70%);
+    }
+
+    @keyframes ambientPulse {
+      0% { transform: translateX(-50%) scale(0.9); opacity: 0.3; }
+      100% { transform: translateX(-50%) scale(1.15); opacity: 0.65; }
+    }
+
+    /* Content wrapper sits above canvas */
+    .content-wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
     header {
-      max-width: 1240px;
+      max-width: 1180px;
+      width: 100%;
       margin: 0 auto;
-      padding: 24px 20px;
+      padding: 22px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      z-index: 50;
+    }
+
+    [data-theme="light"] header {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .brand {
@@ -81,28 +146,57 @@
     }
 
     .brand:hover .brand-svg {
-      transform: scale(1.1) rotate(10deg);
+      transform: scale(1.1) rotate(6deg);
     }
 
-    .brand-name {
+    .brand-text {
       font-size: 1.15rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: -0.02em;
       text-transform: uppercase;
     }
 
-    .nav-actions {
+    .nav-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .btn-theme {
+    /* Language Switcher Pill */
+    .lang-switcher {
+      display: flex;
+      align-items: center;
       background: var(--surface);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .lang-btn.active {
+      background: var(--fg);
+      color: var(--bg);
+    }
+
+    .btn-icon {
+      background: var(--surface);
+      border: 1px solid var(--border);
       color: var(--fg);
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: var(--radius-full);
       display: flex;
       align-items: center;
@@ -111,159 +205,258 @@
       transition: var(--bounce);
     }
 
-    .btn-theme:hover {
-      border-color: var(--border);
-      transform: scale(1.06);
+    .btn-icon:hover {
+      border-color: var(--border-hover);
+      transform: scale(1.08);
     }
 
-    .btn-action-top {
+    .btn-nav-action {
       background: var(--fg);
       color: var(--bg);
       text-decoration: none;
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 10px 22px;
+      padding: 9px 18px;
       border-radius: var(--radius-full);
       text-transform: uppercase;
       transition: var(--bounce);
       border: 1.5px solid var(--fg);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .btn-action-top:hover {
-      background: var(--bg);
+    .btn-nav-action:hover {
+      background: transparent;
       color: var(--fg);
       transform: translateY(-2px);
     }
 
-    /* ── Hero Section ──────────────────────────────────────────── */
+    /* ── Hero Section ─────────────────────────────────────────── */
     .hero {
-      max-width: 1240px;
-      margin: 60px auto 40px;
-      padding: 0 20px;
+      max-width: 980px;
+      margin: 64px auto 36px;
+      padding: 0 24px;
       text-align: center;
     }
 
     .hero-pill {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 5px 16px;
+      gap: 9px;
+      padding: 6px 16px;
       border-radius: var(--radius-full);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--border);
       background: var(--surface);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-bottom: 24px;
+      box-shadow: 0 4px 14px var(--glow);
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+      animation: blink 2s infinite ease-in-out;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
     }
 
     .hero-title {
-      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      font-size: clamp(2.6rem, 5.5vw, 4.4rem);
       line-height: 1.05;
       font-weight: 800;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.04em;
       text-transform: uppercase;
-      margin-bottom: 20px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
+      margin-bottom: 18px;
     }
 
-    .hero-desc {
-      font-size: 1.15rem;
+    .hero-subtitle {
+      font-size: 1.12rem;
       color: var(--muted);
-      max-width: 620px;
-      margin: 0 auto 48px;
+      max-width: 600px;
+      margin: 0 auto;
       line-height: 1.6;
     }
 
-    /* ── Dedicated Download Cards ──────────────────────────────── */
+    /* ── Dedicated Downloads Grid ─────────────────────────────── */
+    .downloads-container {
+      max-width: 1040px;
+      margin: 40px auto 60px;
+      padding: 0 24px;
+      width: 100%;
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
     .download-grid {
-      max-width: 1000px;
-      margin: 0 auto 80px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 24px;
-      padding: 0 20px;
+      margin-bottom: 40px;
     }
 
     .download-card {
-      background: var(--surface);
-      border: 1.5px solid var(--border-subtle);
+      background: var(--surface-card);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 36px 28px;
-      text-align: left;
+      padding: 36px 30px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: var(--bounce);
       position: relative;
       overflow: hidden;
+      transition: var(--bounce);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
     .download-card:hover {
-      border-color: var(--border);
+      border-color: var(--border-hover);
       transform: translateY(-6px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+      box-shadow: 0 20px 48px var(--glow);
     }
 
-    .download-card.highlight {
-      border-color: var(--border);
-      background: var(--surface-card);
+    /* Ambient card corner glow on hover */
+    .download-card::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      opacity: 0;
     }
 
-    .card-badge {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 800;
-      padding: 3px 10px;
-      border-radius: var(--radius-full);
-      border: 1px solid var(--border);
-      text-transform: uppercase;
-      margin-bottom: 20px;
-      width: fit-content;
+    .download-card:hover::before {
+      opacity: 1;
     }
 
-    .card-icon-row {
+    .card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
     }
 
-    .card-platform-icon {
-      width: 44px;
-      height: 44px;
-      stroke: var(--fg);
+    .card-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 4px 11px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .card-heading {
-      font-size: 1.6rem;
+    .platform-icon-wrap {
+      width: 54px;
+      height: 54px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg);
+      transition: var(--bounce);
+    }
+
+    .download-card:hover .platform-icon-wrap {
+      border-color: var(--border-hover);
+      transform: scale(1.1) rotate(4deg);
+    }
+
+    .platform-icon {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+    }
+
+    .card-title {
+      font-size: 1.7rem;
       font-weight: 800;
+      letter-spacing: -0.02em;
       text-transform: uppercase;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .card-meta {
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
-      margin-bottom: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    .card-text {
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.6;
-      margin-bottom: 30px;
+    .meta-tag {
+      background: var(--surface);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
     }
 
-    .btn-download {
-      display: inline-flex;
+    .card-features {
+      list-style: none;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-features li {
+      font-size: 0.88rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .card-features li svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--fg);
+      stroke-width: 2.5;
+      flex-shrink: 0;
+    }
+
+    .btn-download-primary {
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
@@ -272,84 +465,219 @@
       font-family: var(--font-mono);
       font-size: 0.88rem;
       font-weight: 800;
-      padding: 14px 24px;
+      padding: 15px 24px;
       border-radius: var(--radius-full);
       text-decoration: none;
       text-transform: uppercase;
       transition: var(--bounce);
       border: 1.5px solid var(--fg);
       width: 100%;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     }
 
-    .btn-download:hover {
-      background: var(--bg);
+    .btn-download-primary:hover {
+      background: transparent;
       color: var(--fg);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--glow);
     }
 
-    .btn-download-secondary {
-      background: var(--surface);
-      color: var(--fg);
-      border: 1px solid var(--border-subtle);
+    .btn-download-primary svg {
+      transition: transform 0.2s ease;
     }
 
-    .btn-download-secondary:hover {
-      background: var(--fg);
-      color: var(--bg);
+    .btn-download-primary:hover svg {
+      transform: translateY(2px);
     }
 
-    /* ── Live Telemetry Showcase ───────────────────────────────── */
-    .telemetry-section {
-      max-width: 1240px;
-      margin: 40px auto 90px;
-      padding: 0 20px;
-    }
-
-    .console-mock {
-      background: var(--surface);
-      border: 1.5px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-    }
-
-    .console-top {
+    .btn-download-sub {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 16px;
-      margin-bottom: 20px;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-    }
-
-    .console-lines {
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      line-height: 1.9;
+      justify-content: center;
+      gap: 8px;
+      background: transparent;
       color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 11px 20px;
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: var(--transition);
+      border: 1px solid var(--border);
+      margin-top: 10px;
+      width: 100%;
     }
 
-    .c-accent { color: var(--fg); font-weight: 700; }
+    .btn-download-sub:hover {
+      border-color: var(--border-hover);
+      color: var(--fg);
+      background: var(--surface);
+    }
 
-    /* ── Footer ────────────────────────────────────────────────── */
-    footer {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding: 32px 20px;
-      border-top: 1px solid var(--border-subtle);
+    /* ── Official Release Banner ──────────────────────────────── */
+    .release-hub {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+    }
+
+    .release-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 18px;
+    }
+
+    .release-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .release-tag {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--fg);
+    }
+
+    .release-chip {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 800;
+      background: #22c55e22;
+      color: #22c55e;
+      border: 1px solid #22c55e44;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+
+    .release-meta {
       font-family: var(--font-mono);
       font-size: 0.78rem;
       color: var(--muted);
     }
 
-    @media (max-width: 640px) {
+    .release-notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .release-note-item {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+    }
+
+    .note-heading {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--fg);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .note-heading::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--fg);
+    }
+
+    .note-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .release-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-release-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--fg);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 9px 18px;
+      border-radius: var(--radius-full);
+      background: var(--surface-card);
+      transition: var(--bounce);
+      text-transform: uppercase;
+    }
+
+    .btn-release-link:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+      background: var(--surface-elevated);
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      max-width: 1180px;
+      width: 100%;
+      margin: auto auto 0;
+      padding: 28px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    [data-theme="light"] footer {
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    footer a {
+      color: inherit;
+      text-decoration: underline;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: var(--fg);
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        margin: 40px auto 24px;
+      }
+      .download-card {
+        padding: 28px 22px;
+      }
       footer {
         flex-direction: column;
-        gap: 14px;
         text-align: center;
       }
     }
@@ -357,142 +685,414 @@
 </head>
 <body>
 
-  <!-- ── Top Header ───────────────────────────────────────────── -->
-  <header>
-    <a href="landing.html" class="brand">
-      <svg class="brand-svg" viewBox="0 0 453 456">
-        <path d="M 229 198 L 157 236 L 153 284 L 26 353 L 191 455 L 193 369 L 138 335 L 227 286 L 314 334 L 258 367 L 257 454 L 427 355 L 298 282 L 297 237 Z M 317 156 L 317 214 L 381 251 L 382 295 L 445 331 L 452 333 L 451 230 Z M 136 156 L 0 231 L 0 334 L 9 331 L 71 295 L 72 251 L 135 214 Z M 195 13 L 187 16 L 115 62 L 114 145 L 149 122 L 153 122 L 153 212 L 195 187 Z M 228 0 L 228 47 L 257 71 L 257 186 L 301 212 L 302 121 L 341 145 L 342 55 L 261 0 Z" fill-rule="evenodd"/>
-      </svg>
-      <span class="brand-name">Arpanet Suite</span>
-    </a>
+  <!-- Background Canvas for smooth cyber/star network animation -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="ambient-glow"></div>
 
-    <div class="nav-actions">
-      <button class="btn-theme" onclick="toggleTheme()" aria-label="Toggle theme">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/>
-          <line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/>
-          <line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  <div class="content-wrapper">
+    <!-- ── Top Header ─────────────────────────────────────────── -->
+    <header>
+      <a href="landing.html" class="brand">
+        <svg class="brand-svg" viewBox="0 0 453 456">
+          <path d="M 229 198 L 157 236 L 153 284 L 26 353 L 191 455 L 193 369 L 138 335 L 227 286 L 314 334 L 258 367 L 257 454 L 427 355 L 298 282 L 297 237 Z M 317 156 L 317 214 L 381 251 L 382 295 L 445 331 L 452 333 L 451 230 Z M 136 156 L 0 231 L 0 334 L 9 331 L 71 295 L 72 251 L 135 214 Z M 195 13 L 187 16 L 115 62 L 114 145 L 149 122 L 153 122 L 153 212 L 195 187 Z M 228 0 L 228 47 L 257 71 L 257 186 L 301 212 L 302 121 L 341 145 L 342 55 L 261 0 Z" fill-rule="evenodd"/>
         </svg>
-      </button>
-      <a href="index.html" class="btn-action-top">Launch Console &rarr;</a>
-    </div>
-  </header>
+        <span class="brand-text">Arpanet Suite</span>
+      </a>
 
-  <!-- ── Hero ─────────────────────────────────────────────────── -->
-  <main>
-    <section class="hero">
-      <div class="hero-pill">V2.0.0 RELEASE // OFFICIAL BUILDS</div>
-      <h1 class="hero-title">Download Arpanet Suite</h1>
-      <p class="hero-desc">
-        Engineered for authorized Layer-2 network auditing, packet manipulation, and live telemetric defense on Windows and Android.
-      </p>
-    </section>
+      <div class="nav-controls">
+        <!-- Language Switcher Pill -->
+        <div class="lang-switcher">
+          <button class="lang-btn active" id="btn-lang-pt" onclick="setLanguage('pt')">PT</button>
+          <button class="lang-btn" id="btn-lang-en" onclick="setLanguage('en')">EN</button>
+        </div>
 
-    <!-- ── Download Cards ───────────────────────────────────────── -->
-    <section class="download-grid">
-      
-      <!-- Windows Card -->
-      <div class="download-card highlight">
-        <div>
-          <div class="card-icon-row">
-            <span class="card-badge">WINDOWS 64-BIT</span>
-            <!-- Windows Icon -->
-            <svg class="card-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="8" height="8"/>
-              <rect x="13" y="3" width="8" height="8"/>
-              <rect x="3" y="13" width="8" height="8"/>
-              <rect x="13" y="13" width="8" height="8"/>
-            </svg>
+        <!-- Theme Toggle -->
+        <button class="btn-icon" onclick="toggleTheme()" aria-label="Alterar Tema">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+
+        <!-- Web Console Launch -->
+        <a href="index.html" class="btn-nav-action">
+          <span data-i18n="nav_launch">Abrir Console</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- ── Hero ───────────────────────────────────────────────── -->
+    <main>
+      <section class="hero">
+        <div class="hero-pill">
+          <span class="pill-dot"></span>
+          <span data-i18n="hero_badge">RELEASE v2.0.0 OFICIAL // DISPONÍVEL</span>
+        </div>
+        <h1 class="hero-title" data-i18n="hero_title">Baixe o Arpanet Suite</h1>
+        <p class="hero-subtitle" data-i18n="hero_desc">
+          Auditoria de rede Layer-2 e diagnóstico de alta performance. Obtenha os binários oficiais compilados para Windows e Android.
+        </p>
+      </section>
+
+      <!-- ── Dedicated Downloads Grid ─────────────────────────── -->
+      <section class="downloads-container">
+        <div class="section-label" data-i18n="section_downloads">Downloads Oficiais &bull; Plataformas</div>
+
+        <div class="download-grid">
+          <!-- ── Windows Card ─────────────────────────────────── -->
+          <div class="download-card">
+            <div>
+              <div class="card-top">
+                <span class="card-badge">WINDOWS 64-BIT</span>
+                <!-- Official Microsoft Windows 4-Pane Vector Icon -->
+                <div class="platform-icon-wrap" title="Windows 10 / 11">
+                  <svg class="platform-icon" viewBox="0 0 24 24">
+                    <path d="M0 0h11v11H0zM13 0h11v11H13zM0 13h11v11H0zM13 13h11v11H13z"/>
+                  </svg>
+                </div>
+              </div>
+              <h2 class="card-title">Windows Desktop</h2>
+              <div class="card-meta">
+                <span class="meta-tag">arpanet.exe</span>
+                <span class="meta-tag">v2.0.0</span>
+                <span class="meta-tag" data-i18n="meta_win_type">Executável Nativo</span>
+              </div>
+              <ul class="card-features">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span data-i18n="feat_win_1">Binário Go autônomo sem dependências externas</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span data-i18n="feat_win_2">Motor de sockets raw compatível com Npcap</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span data-i18n="feat_win_3">Ícone multi-resolução embutido e atalho no desktop</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <a href="https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.exe" class="btn-download-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span data-i18n="btn_win_dl">Download .EXE (Windows)</span>
+              </a>
+            </div>
           </div>
-          <h2 class="card-heading">Windows Desktop</h2>
-          <div class="card-meta">arpanet.exe &bull; v2.0.0 &bull; Standalone</div>
-          <p class="card-text">
-            Self-contained Go executable with embedded WebView2, high-frequency Npcap raw socket engine, and desktop shortcut icon.
-          </p>
-        </div>
-        <div>
-          <a href="https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.exe" class="btn-download">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <span>Download .EXE (Windows)</span>
-          </a>
-        </div>
-      </div>
 
-      <!-- Android APK Card -->
-      <div class="download-card">
-        <div>
-          <div class="card-icon-row">
-            <span class="card-badge">ANDROID APK / PWA</span>
-            <!-- Smartphone Icon -->
-            <svg class="card-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-              <line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
+          <!-- ── Android APK Card ─────────────────────────────── -->
+          <div class="download-card">
+            <div>
+              <div class="card-top">
+                <span class="card-badge">ANDROID APK</span>
+                <!-- Official Google Android Bugdroid Robot Vector Icon -->
+                <div class="platform-icon-wrap" title="Android 10 - 15">
+                  <svg class="platform-icon" viewBox="0 0 24 24">
+                    <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4126 13.8563 8 12 8s-3.5902.4126-5.1368 1.1507L4.8409 5.6477a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
+                  </svg>
+                </div>
+              </div>
+              <h2 class="card-title">Android Mobile</h2>
+              <div class="card-meta">
+                <span class="meta-tag">arpanet.apk</span>
+                <span class="meta-tag">4.14 MB</span>
+                <span class="meta-tag" data-i18n="meta_apk_type">APK Nativo</span>
+              </div>
+              <ul class="card-features">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span data-i18n="feat_apk_1">Barra de navegação inferior ergonomicamente adaptada</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span data-i18n="feat_apk_2">Compilado no GitHub Actions com Node 22 e JDK 21</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span data-i18n="feat_apk_3">Material You monocromático com safe-areas Android</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <a href="https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.apk" class="btn-download-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span data-i18n="btn_apk_dl">Download .APK (Android)</span>
+              </a>
+              <a href="mobile/index.html" class="btn-download-sub">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                  <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+                <span data-i18n="btn_pwa_install">Abrir UI Mobile no Navegador</span>
+              </a>
+            </div>
           </div>
-          <h2 class="card-heading">Android Mobile</h2>
-          <div class="card-meta">Arpanet Suite &bull; Mobile-First &bull; M3 Touch</div>
-          <p class="card-text">
-            Ergonomic bottom navigation bar, safe-area adaptive padding, and instant WebAPK installation without emulator overhead.
-          </p>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <a href="https://github.com/mk3bomfim/arpanet-suite/actions" target="_blank" class="btn-download">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <span>Get Android APK (GitHub CI)</span>
-          </a>
-          <a href="index.html" class="btn-download btn-download-secondary">
-            <span>Install WebAPK via Browser</span>
-          </a>
+
+        <!-- ── Official Release Hub ─────────────────────────────── -->
+        <div class="section-label" data-i18n="section_release">Release v2.0.0 // Notas de Versão</div>
+
+        <div class="release-hub">
+          <div class="release-header">
+            <div class="release-title-row">
+              <span class="release-tag">v2.0.0 — Production Release</span>
+              <span class="release-chip" data-i18n="chip_verified">Verificado & Ativo</span>
+            </div>
+            <div class="release-meta" data-i18n="release_meta">
+              Publicado em 20/09/2026 &bull; Build c02d266
+            </div>
+          </div>
+
+          <div class="release-notes-grid">
+            <div class="release-note-item">
+              <div class="note-heading" data-i18n="note_1_title">Design Monocromático</div>
+              <div class="note-desc" data-i18n="note_1_desc">UI minimalista em preto & branco puro, bordas curvas e micro-interações fluidas sem emojis.</div>
+            </div>
+            <div class="release-note-item">
+              <div class="note-heading" data-i18n="note_2_title">Compilação Cloud</div>
+              <div class="note-desc" data-i18n="note_2_desc">Pipeline automatizado via GitHub Actions gerando binários Windows e APK Android simultaneamente.</div>
+            </div>
+            <div class="release-note-item">
+              <div class="note-heading" data-i18n="note_3_title">Vetor Oficial Arpanet</div>
+              <div class="note-desc" data-i18n="note_3_desc">Emblema vetorial oficial integrado nas interfaces, atalhos do sistema e ícones de alta resolução.</div>
+            </div>
+          </div>
+
+          <div class="release-actions">
+            <a href="https://github.com/mk3bomfim/arpanet-suite/releases/tag/v2.0.0" target="_blank" class="btn-release-link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+              </svg>
+              <span data-i18n="btn_github_release">Ver no GitHub Releases</span>
+            </a>
+            <a href="https://github.com/mk3bomfim/arpanet-suite/actions" target="_blank" class="btn-release-link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+              <span data-i18n="btn_actions_ci">GitHub Actions CI Pipeline</span>
+            </a>
+            <a href="index.html" class="btn-release-link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"/>
+                <line x1="12" y1="19" x2="20" y2="19"/>
+              </svg>
+              <span data-i18n="btn_open_console">Testar Console Web</span>
+            </a>
+          </div>
         </div>
+
+      </section>
+    </main>
+
+    <!-- ── Footer ─────────────────────────────────────────────── -->
+    <footer>
+      <div>
+        <span>ARPANET SUITE V2.0.0 &bull; AUTHORIZED NETWORK BENCH</span>
       </div>
-
-    </section>
-
-    <!-- ── Live Architecture Mock Console ──────────────────────── -->
-    <section class="telemetry-section">
-      <div class="console-mock">
-        <div class="console-top">
-          <span>ARPANET SUITE AUDITING SYSTEM</span>
-          <span>GITHUB ACTIONS & VERCEL DEPLOYMENT VERIFIED</span>
-        </div>
-        <div class="console-lines">
-          <div><span class="c-accent">&gt;</span> target: Windows 11 x64 (Npcap compatible) + Android 10-15</div>
-          <div><span class="c-accent">&gt;</span> core: Go 1.22 raw packet manipulation + Npcap promiscuous capture</div>
-          <div><span class="c-accent">&gt;</span> design: Pure Monochrome Material You M3 with official vector emblem</div>
-          <div><span class="c-accent">&gt;</span> repository: <a href="https://github.com/mk3bomfim/arpanet-suite" target="_blank" style="color: var(--fg); text-decoration: underline;">github.com/mk3bomfim/arpanet-suite</a></div>
-        </div>
+      <div>
+        <a href="https://github.com/mk3bomfim/arpanet-suite" target="_blank">github.com/mk3bomfim/arpanet-suite</a>
       </div>
-    </section>
-  </main>
+    </footer>
+  </div>
 
-  <!-- ── Footer ────────────────────────────────────────────────── -->
-  <footer>
-    <span>ARPANET SUITE V2.0.0 &bull; AUTHORIZED AUDIT BENCH</span>
-    <span>HOSTED ON VERCEL & GITHUB RELEASES</span>
-  </footer>
-
+  <!-- ── Interactive Canvas & i18n Scripts ─────────────────────── -->
   <script>
-    let theme = localStorage.getItem('arpanet_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', theme);
-    function toggleTheme() {
-      theme = theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('arpanet_theme', theme);
+    /* ── Translations Dictionary (PT-BR and EN) ─────────────── */
+    const translations = {
+      pt: {
+        nav_launch: "Abrir Console",
+        hero_badge: "RELEASE v2.0.0 OFICIAL // DISPONÍVEL",
+        hero_title: "Baixe o Arpanet Suite",
+        hero_desc: "Auditoria de rede Layer-2 e diagnóstico de alta performance. Obtenha os binários oficiais compilados para Windows e Android.",
+        section_downloads: "Downloads Oficiais • Plataformas",
+        meta_win_type: "Executável Nativo",
+        feat_win_1: "Binário Go autônomo sem dependências externas",
+        feat_win_2: "Motor de sockets raw compatível com Npcap",
+        feat_win_3: "Ícone multi-resolução embutido e atalho no desktop",
+        btn_win_dl: "Download .EXE (Windows)",
+        meta_apk_type: "APK Nativo",
+        feat_apk_1: "Barra de navegação inferior ergonomicamente adaptada",
+        feat_apk_2: "Compilado no GitHub Actions com Node 22 e JDK 21",
+        feat_apk_3: "Material You monocromático com safe-areas Android",
+        btn_apk_dl: "Download .APK (Android)",
+        btn_pwa_install: "Abrir UI Mobile no Navegador",
+        section_release: "Release v2.0.0 // Notas de Versão",
+        chip_verified: "Verificado & Ativo",
+        release_meta: "Publicado em 20/09/2026 • Build c02d266",
+        note_1_title: "Design Monocromático",
+        note_1_desc: "UI minimalista em preto & branco puro, bordas curvas e micro-interações fluidas sem emojis.",
+        note_2_title: "Compilação Cloud",
+        note_2_desc: "Pipeline automatizado via GitHub Actions gerando binários Windows e APK Android simultaneamente.",
+        note_3_title: "Vetor Oficial Arpanet",
+        note_3_desc: "Emblema vetorial oficial integrado nas interfaces, atalhos do sistema e ícones de alta resolução.",
+        btn_github_release: "Ver no GitHub Releases",
+        btn_actions_ci: "GitHub Actions CI Pipeline",
+        btn_open_console: "Testar Console Web"
+      },
+      en: {
+        nav_launch: "Launch Console",
+        hero_badge: "OFFICIAL v2.0.0 RELEASE // ACTIVE",
+        hero_title: "Download Arpanet Suite",
+        hero_desc: "High-performance Layer-2 network auditing and diagnostics. Get the official compiled binaries for Windows and Android.",
+        section_downloads: "Official Downloads • Platforms",
+        meta_win_type: "Native Executable",
+        feat_win_1: "Self-contained Go binary with zero external runtimes",
+        feat_win_2: "High-frequency raw socket engine with Npcap support",
+        feat_win_3: "Embedded multi-resolution icon and desktop shortcut",
+        btn_win_dl: "Download .EXE (Windows)",
+        meta_apk_type: "Native APK",
+        feat_apk_1: "Ergonomic thumb-friendly bottom navigation bar",
+        feat_apk_2: "Cloud compiled via GitHub Actions with Node 22 & JDK 21",
+        feat_apk_3: "Monochrome Material You design with Android safe-areas",
+        btn_apk_dl: "Download .APK (Android)",
+        btn_pwa_install: "Open Mobile UI in Browser",
+        section_release: "Release v2.0.0 // Changelog Hub",
+        chip_verified: "Verified & Active",
+        release_meta: "Published on 2026-09-20 • Build c02d266",
+        note_1_title: "Monochrome Craft",
+        note_1_desc: "Minimalist pure black & white UI, curved radii, and fluid micro-interactions with zero emojis.",
+        note_2_title: "Cloud Build Pipeline",
+        note_2_desc: "Automated GitHub Actions CI generating Windows binaries and Android APK concurrently.",
+        note_3_title: "Official Arpanet Vector",
+        note_3_desc: "Official vector emblem integrated into web views, OS shortcuts, and high-res icons.",
+        btn_github_release: "View on GitHub Releases",
+        btn_actions_ci: "GitHub Actions CI Pipeline",
+        btn_open_console: "Test Web Console"
+      }
+    };
+
+    let currentLang = localStorage.getItem('arpanet_lang') || (navigator.language.startsWith('pt') ? 'pt' : 'en');
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('arpanet_lang', lang);
+      document.documentElement.setAttribute('lang', lang === 'pt' ? 'pt-BR' : 'en');
+      
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(lang === 'pt' ? 'btn-lang-pt' : 'btn-lang-en');
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
     }
+
+    /* ── Theme Toggle ───────────────────────────────────────── */
+    let currentTheme = localStorage.getItem('arpanet_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('arpanet_theme', currentTheme);
+    }
+
+    /* ── Animated Cyber Network Particle Canvas ──────────────── */
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    const particleCount = 42;
+    const maxDistance = 140;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.45;
+        this.vy = (Math.random() - 0.5) * 0.45;
+        this.radius = Math.random() * 1.8 + 1.2;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw connection lines
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < maxDistance) {
+            const alpha = (1 - dist / maxDistance) * (currentTheme === 'dark' ? 0.22 : 0.12);
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = currentTheme === 'dark' ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})`;
+            ctx.lineWidth = 0.9;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Update and draw nodes
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', () => {
+      resize();
+      initParticles();
+    });
+
+    // Initialize
+    resize();
+    initParticles();
+    animate();
+    setLanguage(currentLang);
   </script>
 </body>
 </html>

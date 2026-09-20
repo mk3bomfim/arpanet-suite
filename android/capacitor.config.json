@@ -1,7 +1,7 @@
 {
   "appId": "com.arpanet.suite",
   "appName": "Arpanet Suite",
-  "webDir": "../ui",
+  "webDir": "ui",
   "server": {
     "androidScheme": "https",
     "cleartext": true

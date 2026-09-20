@@ -11,6 +11,10 @@
     {
       "source": "/app",
       "destination": "/index.html"
+    },
+    {
+      "source": "/mobile",
+      "destination": "/mobile/index.html"
     }
   ],
   "headers": [
