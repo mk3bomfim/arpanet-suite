@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+*.apk
+android-artifacts/
 
 # Node modules
 node_modules/
