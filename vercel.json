@@ -1,6 +1,7 @@
 {
   "version": 2,
   "public": true,
+  "outputDirectory": "ui",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
