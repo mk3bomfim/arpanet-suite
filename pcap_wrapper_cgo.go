@@ -3,17 +3,22 @@
 package main
 
 import (
+	"net"
 	"time"
 
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 )
+
+type pcapInterfaceAddress struct {
+	IP      net.IP
+	Netmask net.IPMask
+}
 
 type pcapInterfaceDev struct {
 	Name        string
 	Description string
-	Addresses   []string
+	Addresses   []pcapInterfaceAddress
 }
 
 func pcapFindAllDevs() ([]pcapInterfaceDev, error) {
@@ -23,11 +28,12 @@ func pcapFindAllDevs() ([]pcapInterfaceDev, error) {
 	}
 	var out []pcapInterfaceDev
 	for _, d := range devs {
-		var addrs []string
+		var addrs []pcapInterfaceAddress
 		for _, a := range d.Addresses {
-			if a.IP.To4() != nil {
-				addrs = append(addrs, a.IP.String())
-			}
+			addrs = append(addrs, pcapInterfaceAddress{
+				IP:      a.IP,
+				Netmask: a.Netmask,
+			})
 		}
 		out = append(out, pcapInterfaceDev{
 			Name:        d.Name,

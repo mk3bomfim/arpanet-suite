@@ -4,15 +4,21 @@ package main
 
 import (
 	"errors"
+	"net"
 	"time"
 
 	"github.com/google/gopacket"
 )
 
+type pcapInterfaceAddress struct {
+	IP      net.IP
+	Netmask net.IPMask
+}
+
 type pcapInterfaceDev struct {
 	Name        string
 	Description string
-	Addresses   []string
+	Addresses   []pcapInterfaceAddress
 }
 
 func pcapFindAllDevs() ([]pcapInterfaceDev, error) {
