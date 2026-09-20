@@ -3,40 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Arpanet Suite — Autonomous Network Security & Packet Telemetry</title>
-  <meta name="description" content="Arpanet Suite — High-frequency Go network auditing, ARP interception, and fluid Material You monochrome UI.">
+  <title>Arpanet Suite — Download APK & Windows Executable</title>
+  <meta name="description" content="Arpanet Suite — Autonomous Layer-2 Network Security Auditing. Download for Windows 11 and Android.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='104' fill='%23000000'/%3E%3Cg transform='translate(85.13 84) scale(0.754386)'%3E%3Cpath d='M 229 198 L 157 236 L 153 284 L 26 353 L 191 455 L 193 369 L 138 335 L 227 286 L 314 334 L 258 367 L 257 454 L 427 355 L 298 282 L 297 237 Z M 317 156 L 317 214 L 381 251 L 382 295 L 445 331 L 452 333 L 451 230 Z M 136 156 L 0 231 L 0 334 L 9 331 L 71 295 L 72 251 L 135 214 Z M 195 13 L 187 16 L 115 62 L 114 145 L 149 122 L 153 122 L 153 212 L 195 187 Z M 228 0 L 228 47 L 257 71 L 257 186 L 301 212 L 302 121 L 341 145 L 342 55 L 261 0 Z' fill='%23FFFFFF' fill-rule='evenodd'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #000000;
       --fg: #ffffff;
       --surface: #0a0a0c;
-      --surface-card: #121317;
+      --surface-card: #131418;
       --border: #ffffff;
-      --border-subtle: #24252b;
-      --muted: #82858f;
-      --accent: #ffffff;
+      --border-subtle: #232429;
+      --muted: #8b8e99;
       --font-display: 'Space Grotesk', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
-      --radius-sm: 8px;
-      --radius-md: 16px;
-      --radius-lg: 24px;
+      --radius-sm: 10px;
+      --radius-md: 18px;
+      --radius-lg: 28px;
       --radius-full: 9999px;
-      --transition-bounce: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-      --transition-smooth: all 0.2s ease-out;
+      --transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      --bounce: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     [data-theme="light"] {
-      --bg: #ffffff;
-      --fg: #000000;
-      --surface: #f7f8fa;
+      --bg: #f8f9fa;
+      --fg: #0a0a0a;
+      --surface: #ffffff;
       --surface-card: #ffffff;
-      --border: #000000;
-      --border-subtle: #e1e4ea;
-      --muted: #666973;
-      --accent: #000000;
+      --border: #0a0a0a;
+      --border-subtle: #dfe3e8;
+      --muted: #6c727c;
     }
 
     *, *::before, *::after {
@@ -51,13 +50,13 @@
       font-family: var(--font-display);
       line-height: 1.5;
       overflow-x: hidden;
-      transition: background 0.3s ease, color 0.3s ease;
+      transition: background 0.25s, color 0.25s;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Top Bar ──────────────────────────────────────────────── */
+    /* ── Navigation ────────────────────────────────────────────── */
     header {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
       padding: 24px 20px;
       display: flex;
@@ -66,7 +65,7 @@
       border-bottom: 1px solid var(--border-subtle);
     }
 
-    .brand-wrap {
+    .brand {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -74,25 +73,25 @@
       color: inherit;
     }
 
-    .brand-logo-svg {
+    .brand-svg {
       width: 32px;
       height: 32px;
       fill: var(--fg);
-      transition: var(--transition-bounce);
+      transition: var(--bounce);
     }
 
-    .brand-wrap:hover .brand-logo-svg {
-      transform: scale(1.1) rotate(12deg);
+    .brand:hover .brand-svg {
+      transform: scale(1.1) rotate(10deg);
     }
 
-    .brand-text {
+    .brand-name {
       font-size: 1.15rem;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
 
-    .header-actions {
+    .nav-actions {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -109,317 +108,235 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: var(--transition-bounce);
+      transition: var(--bounce);
     }
 
     .btn-theme:hover {
       border-color: var(--border);
-      transform: scale(1.08);
+      transform: scale(1.06);
     }
 
-    .btn-nav-primary {
+    .btn-action-top {
       background: var(--fg);
       color: var(--bg);
       text-decoration: none;
       font-family: var(--font-mono);
       font-size: 0.8rem;
       font-weight: 700;
-      padding: 10px 20px;
+      padding: 10px 22px;
       border-radius: var(--radius-full);
       text-transform: uppercase;
-      transition: var(--transition-bounce);
-      border: 1px solid var(--fg);
+      transition: var(--bounce);
+      border: 1.5px solid var(--fg);
     }
 
-    .btn-nav-primary:hover {
+    .btn-action-top:hover {
       background: var(--bg);
       color: var(--fg);
       transform: translateY(-2px);
     }
 
-    /* ── Hero Section ─────────────────────────────────────────── */
+    /* ── Hero Section ──────────────────────────────────────────── */
     .hero {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 60px auto 40px;
       padding: 0 20px;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 50px;
-      align-items: center;
+      text-align: center;
     }
 
-    @media (max-width: 900px) {
-      .hero {
-        grid-template-columns: 1fr;
-        gap: 40px;
-        margin-top: 30px;
-      }
-    }
-
-    .hero-tag {
+    .hero-pill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 4px 14px;
+      padding: 5px 16px;
       border-radius: var(--radius-full);
       border: 1px solid var(--border-subtle);
       background: var(--surface);
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-bottom: 24px;
     }
 
-    .hero-tag-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--fg);
-      border-radius: var(--radius-full);
-      box-shadow: 0 0 6px var(--fg);
-    }
-
-    .hero-headline {
-      font-size: clamp(2.5rem, 5.5vw, 4.2rem);
-      line-height: 1.06;
+    .hero-title {
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      line-height: 1.05;
       font-weight: 800;
       letter-spacing: -0.03em;
       text-transform: uppercase;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .hero-sub {
-      font-size: 1.1rem;
+    .hero-desc {
+      font-size: 1.15rem;
       color: var(--muted);
-      max-width: 540px;
-      margin-bottom: 36px;
+      max-width: 620px;
+      margin: 0 auto 48px;
       line-height: 1.6;
     }
 
-    .hero-cta-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: center;
+    /* ── Dedicated Download Cards ──────────────────────────────── */
+    .download-grid {
+      max-width: 1000px;
+      margin: 0 auto 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      padding: 0 20px;
     }
 
-    .cta-main {
+    .download-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px 28px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--bounce);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .download-card:hover {
+      border-color: var(--border);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+    }
+
+    .download-card.highlight {
+      border-color: var(--border);
+      background: var(--surface-card);
+    }
+
+    .card-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      width: fit-content;
+    }
+
+    .card-icon-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .card-platform-icon {
+      width: 44px;
+      height: 44px;
+      stroke: var(--fg);
+    }
+
+    .card-heading {
+      font-size: 1.6rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .card-meta {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .card-text {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .btn-download {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
       background: var(--fg);
       color: var(--bg);
       font-family: var(--font-mono);
       font-size: 0.88rem;
       font-weight: 800;
-      padding: 14px 28px;
-      border-radius: var(--radius-full);
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: var(--transition-bounce);
-      border: 1.5px solid var(--fg);
-    }
-
-    .cta-main:hover {
-      background: var(--bg);
-      color: var(--fg);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(255,255,255,0.15);
-    }
-
-    .cta-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--surface);
-      color: var(--fg);
-      font-family: var(--font-mono);
-      font-size: 0.88rem;
-      font-weight: 700;
       padding: 14px 24px;
       border-radius: var(--radius-full);
       text-decoration: none;
+      text-transform: uppercase;
+      transition: var(--bounce);
+      border: 1.5px solid var(--fg);
+      width: 100%;
+    }
+
+    .btn-download:hover {
+      background: var(--bg);
+      color: var(--fg);
+      transform: translateY(-2px);
+    }
+
+    .btn-download-secondary {
+      background: var(--surface);
+      color: var(--fg);
       border: 1px solid var(--border-subtle);
-      transition: var(--transition-smooth);
     }
 
-    .cta-secondary:hover {
-      border-color: var(--border);
-      background: var(--surface-card);
+    .btn-download-secondary:hover {
+      background: var(--fg);
+      color: var(--bg);
     }
 
-    /* ── Live Architecture Mock Console ──────────────────────── */
-    .console-card {
+    /* ── Live Telemetry Showcase ───────────────────────────────── */
+    .telemetry-section {
+      max-width: 1240px;
+      margin: 40px auto 90px;
+      padding: 0 20px;
+    }
+
+    .console-mock {
       background: var(--surface);
       border: 1.5px solid var(--border-subtle);
       border-radius: var(--radius-lg);
-      padding: 24px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-      transition: var(--transition-smooth);
-      position: relative;
+      padding: 28px;
     }
 
-    .console-card:hover {
-      border-color: var(--border);
-    }
-
-    .console-header {
+    .console-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 14px;
-      margin-bottom: 18px;
-    }
-
-    .console-badges {
-      display: flex;
-      gap: 6px;
-    }
-
-    .c-badge {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      border: 1px solid var(--border-subtle);
-      background: var(--bg);
-    }
-
-    .console-body {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      line-height: 1.8;
-      color: var(--muted);
-    }
-
-    .c-line {
-      display: flex;
-      gap: 10px;
-    }
-
-    .c-lead {
-      color: var(--fg);
-      font-weight: 700;
-    }
-
-    .c-success {
-      color: var(--fg);
-      border-left: 2px solid var(--fg);
-      padding-left: 8px;
-      margin-top: 8px;
-    }
-
-    /* ── Features Bento Grid ──────────────────────────────────── */
-    .bento-section {
-      max-width: 1200px;
-      margin: 80px auto;
-      padding: 0 20px;
-    }
-
-    .bento-title {
-      font-size: 1.8rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: -0.02em;
-      margin-bottom: 30px;
-    }
-
-    .bento-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
-
-    @media (max-width: 800px) {
-      .bento-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .bento-item {
-      background: var(--surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: var(--transition-smooth);
-    }
-
-    .bento-item:hover {
-      border-color: var(--border);
-      transform: translateY(-4px);
-    }
-
-    .bento-num {
+      padding-bottom: 16px;
+      margin-bottom: 20px;
       font-family: var(--font-mono);
       font-size: 0.75rem;
-      font-weight: 800;
+    }
+
+    .console-lines {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.9;
       color: var(--muted);
-      margin-bottom: 18px;
     }
 
-    .bento-item h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      letter-spacing: -0.01em;
-    }
+    .c-accent { color: var(--fg); font-weight: 700; }
 
-    .bento-item p {
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.6;
-    }
-
-    /* ── Mobile APK Download Banner ───────────────────────────── */
-    .mobile-banner {
-      max-width: 1200px;
-      margin: 60px auto 100px;
-      padding: 0 20px;
-    }
-
-    .mobile-banner-card {
-      background: var(--surface-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 40px 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 30px;
-      flex-wrap: wrap;
-    }
-
-    .mobile-banner-left h2 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .mobile-banner-left p {
-      color: var(--muted);
-      max-width: 580px;
-      font-size: 0.95rem;
-    }
-
-    .mobile-btn-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    /* ── Footer ───────────────────────────────────────────────── */
+    /* ── Footer ────────────────────────────────────────────────── */
     footer {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 30px 20px;
+      padding: 32px 20px;
       border-top: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
@@ -429,10 +346,10 @@
       color: var(--muted);
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 640px) {
       footer {
         flex-direction: column;
-        gap: 12px;
+        gap: 14px;
         text-align: center;
       }
     }
@@ -442,15 +359,14 @@
 
   <!-- ── Top Header ───────────────────────────────────────────── -->
   <header>
-    <a href="#" class="brand-wrap">
-      <!-- Official Vector Icon -->
-      <svg class="brand-logo-svg" viewBox="0 0 453 456">
-        <path d="M 229.00 198.00 L 157.00 236.00 L 153.00 284.00 L 26.00 353.00 L 191.00 455.00 L 193.00 369.00 L 138.00 335.00 L 227.00 286.00 L 314.00 334.00 L 258.00 367.00 L 257.00 454.00 L 427.00 355.00 L 298.00 282.00 L 297.00 237.00 Z M 317.00 156.00 L 317.00 214.00 L 381.00 251.00 L 382.00 295.00 L 445.00 331.00 L 452.00 333.00 L 451.00 230.00 Z M 136.00 156.00 L 0.00 231.00 L 0.00 334.00 L 9.00 331.00 L 71.00 295.00 L 72.00 251.00 L 135.00 214.00 Z M 195.00 13.00 L 187.00 16.00 L 115.00 62.00 L 114.00 145.00 L 149.00 122.00 L 153.00 122.00 L 153.00 212.00 L 195.00 187.00 Z M 228.00 0.00 L 228.00 47.00 L 257.00 71.00 L 257.00 186.00 L 301.00 212.00 L 302.00 121.00 L 341.00 145.00 L 342.00 55.00 L 261.00 0.00 Z" fill-rule="evenodd"/>
+    <a href="landing.html" class="brand">
+      <svg class="brand-svg" viewBox="0 0 453 456">
+        <path d="M 229 198 L 157 236 L 153 284 L 26 353 L 191 455 L 193 369 L 138 335 L 227 286 L 314 334 L 258 367 L 257 454 L 427 355 L 298 282 L 297 237 Z M 317 156 L 317 214 L 381 251 L 382 295 L 445 331 L 452 333 L 451 230 Z M 136 156 L 0 231 L 0 334 L 9 331 L 71 295 L 72 251 L 135 214 Z M 195 13 L 187 16 L 115 62 L 114 145 L 149 122 L 153 122 L 153 212 L 195 187 Z M 228 0 L 228 47 L 257 71 L 257 186 L 301 212 L 302 121 L 341 145 L 342 55 L 261 0 Z" fill-rule="evenodd"/>
       </svg>
-      <span class="brand-text">Arpanet Suite</span>
+      <span class="brand-name">Arpanet Suite</span>
     </a>
 
-    <div class="header-actions">
+    <div class="nav-actions">
       <button class="btn-theme" onclick="toggleTheme()" aria-label="Toggle theme">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="5"/>
@@ -464,104 +380,109 @@
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
         </svg>
       </button>
-      <a href="index.html" class="btn-nav-primary">Console &rarr;</a>
+      <a href="index.html" class="btn-action-top">Launch Console &rarr;</a>
     </div>
   </header>
 
   <!-- ── Hero ─────────────────────────────────────────────────── -->
   <main>
     <section class="hero">
-      <div class="hero-content">
-        <div class="hero-tag">
-          <span class="hero-tag-dot"></span>
-          <span>Layer-2 Security Telemetry // Go Core</span>
-        </div>
-        <h1 class="hero-headline">High-Precision Network Interception.</h1>
-        <p class="hero-sub">
-          Arpanet Suite delivers kernel-level packet manipulation, instant subnet host discovery, and tactile mobile audit capabilities packaged in an uncompromised monochrome design.
-        </p>
-        <div class="hero-cta-group">
-          <a href="index.html" class="cta-main">
-            <span>Launch Web App</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
+      <div class="hero-pill">V2.0.0 RELEASE // OFFICIAL BUILDS</div>
+      <h1 class="hero-title">Download Arpanet Suite</h1>
+      <p class="hero-desc">
+        Engineered for authorized Layer-2 network auditing, packet manipulation, and live telemetric defense on Windows and Android.
+      </p>
+    </section>
+
+    <!-- ── Download Cards ───────────────────────────────────────── -->
+    <section class="download-grid">
+      
+      <!-- Windows Card -->
+      <div class="download-card highlight">
+        <div>
+          <div class="card-icon-row">
+            <span class="card-badge">WINDOWS 64-BIT</span>
+            <!-- Windows Icon -->
+            <svg class="card-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="8" height="8"/>
+              <rect x="13" y="3" width="8" height="8"/>
+              <rect x="3" y="13" width="8" height="8"/>
+              <rect x="13" y="13" width="8" height="8"/>
             </svg>
-          </a>
-          <a href="#android-build" class="cta-secondary">Android APK Guide</a>
-        </div>
-      </div>
-
-      <div class="console-card">
-        <div class="console-header">
-          <div class="console-badges">
-            <span class="c-badge">GO 1.22</span>
-            <span class="c-badge">NPCAP</span>
-            <span class="c-badge">SSE STREAM</span>
           </div>
-          <span style="font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700;">LIVE AUDIT</span>
-        </div>
-        <div class="console-body">
-          <div class="c-line"><span class="c-lead">&gt;</span> <span>arp.InitSubnet("192.168.1.0/24")</span></div>
-          <div class="c-line"><span class="c-lead">&gt;</span> <span>Gateway located: 192.168.1.1</span></div>
-          <div class="c-line"><span class="c-lead">&gt;</span> <span>Discovered 8 active nodes via hardware probe</span></div>
-          <div class="c-line"><span class="c-lead">&gt;</span> <span>Packet telemetry active on port 9731</span></div>
-          <div class="c-success">
-            <strong>SYSTEM READY:</strong> Touch interface & live SSE packet table synchronized.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Bento Grid ───────────────────────────────────────────── -->
-    <section class="bento-section">
-      <h2 class="bento-title">Engineered for Operators</h2>
-      <div class="bento-grid">
-        <div class="bento-item">
-          <div>
-            <div class="bento-num">01 // TELEMETRY</div>
-            <h3>Real-Time Packet Stream</h3>
-            <p>Direct SSE pipeline from Go socket capture to browser table. Inspect TCP, UDP, DNS, TLS, and ARP with sub-millisecond precision.</p>
-          </div>
-        </div>
-        <div class="bento-item">
-          <div>
-            <div class="bento-num">02 // ADAPTIVE</div>
-            <h3>Fluid Material You M3</h3>
-            <p>Monochrome curved design system, tactile pill controls, and ergonomic bottom navigation optimized for one-hand Android auditing.</p>
-          </div>
-        </div>
-        <div class="bento-item">
-          <div>
-            <div class="bento-num">03 // I18N</div>
-            <h3>Bilingual Architecture</h3>
-            <p>Instant zero-reload switching between English and Portuguese (PT-BR) with local storage preference persistence.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Mobile APK Build Box ─────────────────────────────────── -->
-    <section class="mobile-banner" id="android-build">
-      <div class="mobile-banner-card">
-        <div class="mobile-banner-left">
-          <h2>Android APK & PWA Native</h2>
-          <p>
-            The Arpanet Suite interface is already 100% mobile-ready with PWA manifest, standalone viewport, touch targets, and full Android navigation.
+          <h2 class="card-heading">Windows Desktop</h2>
+          <div class="card-meta">arpanet.exe &bull; v2.0.0 &bull; Standalone</div>
+          <p class="card-text">
+            Self-contained Go executable with embedded WebView2, high-frequency Npcap raw socket engine, and desktop shortcut icon.
           </p>
         </div>
-        <div class="mobile-btn-group">
-          <a href="index.html" class="cta-main">Install as PWA</a>
-          <a href="../android/README.md" target="_blank" class="cta-secondary">Build APK Guide</a>
+        <div>
+          <a href="https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.exe" class="btn-download">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Download .EXE (Windows)</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Android APK Card -->
+      <div class="download-card">
+        <div>
+          <div class="card-icon-row">
+            <span class="card-badge">ANDROID APK / PWA</span>
+            <!-- Smartphone Icon -->
+            <svg class="card-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <h2 class="card-heading">Android Mobile</h2>
+          <div class="card-meta">Arpanet Suite &bull; Mobile-First &bull; M3 Touch</div>
+          <p class="card-text">
+            Ergonomic bottom navigation bar, safe-area adaptive padding, and instant WebAPK installation without emulator overhead.
+          </p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="https://github.com/mk3bomfim/arpanet-suite/actions" target="_blank" class="btn-download">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Get Android APK (GitHub CI)</span>
+          </a>
+          <a href="index.html" class="btn-download btn-download-secondary">
+            <span>Install WebAPK via Browser</span>
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── Live Architecture Mock Console ──────────────────────── -->
+    <section class="telemetry-section">
+      <div class="console-mock">
+        <div class="console-top">
+          <span>ARPANET SUITE AUDITING SYSTEM</span>
+          <span>GITHUB ACTIONS & VERCEL DEPLOYMENT VERIFIED</span>
+        </div>
+        <div class="console-lines">
+          <div><span class="c-accent">&gt;</span> target: Windows 11 x64 (Npcap compatible) + Android 10-15</div>
+          <div><span class="c-accent">&gt;</span> core: Go 1.22 raw packet manipulation + Npcap promiscuous capture</div>
+          <div><span class="c-accent">&gt;</span> design: Pure Monochrome Material You M3 with official vector emblem</div>
+          <div><span class="c-accent">&gt;</span> repository: <a href="https://github.com/mk3bomfim/arpanet-suite" target="_blank" style="color: var(--fg); text-decoration: underline;">github.com/mk3bomfim/arpanet-suite</a></div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- ── Footer ───────────────────────────────────────────────── -->
+  <!-- ── Footer ────────────────────────────────────────────────── -->
   <footer>
-    <span>ARPANET SUITE V2.0 // AUTHORIZED AUDIT BENCH</span>
-    <span>MONOCHROME GO TELEMETRY ENGINE</span>
+    <span>ARPANET SUITE V2.0.0 &bull; AUTHORIZED AUDIT BENCH</span>
+    <span>HOSTED ON VERCEL & GITHUB RELEASES</span>
   </footer>
 
   <script>
