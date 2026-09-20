@@ -7,21 +7,24 @@
 **Autonomous Layer-2 Network Security Auditing & Diagnostics Suite**  
 *Available for Windows 10/11 (64-bit) & Android Mobile (APK)*
 
-[![GitHub Release](https://img.shields.io/github/v/release/mk3bomfim/arpanet-suite?color=000000&style=for-the-badge&logo=github)](https://github.com/mk3bomfim/arpanet-suite/releases/tag/v2.0.0)
+[![Landing Page](https://img.shields.io/badge/🌐%20Site%20Oficial-net--nu--one.vercel.app-000000?style=for-the-badge)](https://net-nu-one.vercel.app/landing)
+[![GitHub Release](https://img.shields.io/github/v/release/mk3bomfim/arpanet-suite?color=000000&style=for-the-badge&logo=github)](https://github.com/mk3bomfim/arpanet-suite/releases/latest)
 [![CI Build Status](https://img.shields.io/github/actions/workflow/status/mk3bomfim/arpanet-suite/build-apk.yml?branch=main&color=000000&style=for-the-badge&logo=githubactions)](https://github.com/mk3bomfim/arpanet-suite/actions)
-[![Platform Windows](https://img.shields.io/badge/Platform-Windows%20x64-000000?style=for-the-badge&logo=windows)](https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.exe)
-[![Platform Android](https://img.shields.io/badge/Platform-Android%20APK-000000?style=for-the-badge&logo=android)](https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.apk)
+[![Platform Windows](https://img.shields.io/badge/Platform-Windows%20x64-000000?style=for-the-badge&logo=windows)](https://github.com/mk3bomfim/arpanet-suite/releases/latest/download/arpanet.exe)
+[![Platform Android](https://img.shields.io/badge/Platform-Android%20APK-000000?style=for-the-badge&logo=android)](https://github.com/mk3bomfim/arpanet-suite/releases/latest/download/arpanet-suite.apk)
+
+### 🌐 [net-nu-one.vercel.app/landing](https://net-nu-one.vercel.app/landing)
 
 [🇧🇷 Português](#-português) • [🇺🇸 English](#-english)
 
 ---
 
-### 📥 Downloads Oficiais / Official Downloads (v2.0.0)
+### 📥 Downloads Oficiais / Official Downloads
 
-| Plataforma / Platform | Arquivo / File | Tamanho / Size | Download Direto / Direct Link |
-|---|---|---|---|
-| **Windows 64-bit** | `arpanet.exe` | ~45 MB | [Download .EXE](https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.exe) |
-| **Android Mobile** | `arpanet.apk` | 4.14 MB | [Download .APK](https://github.com/mk3bomfim/arpanet-suite/releases/download/v2.0.0/arpanet.apk) |
+| Plataforma / Platform | Arquivo / File | Download Direto / Direct Link |
+|---|---|---|
+| **Windows 64-bit** | `arpanet.exe` | [Download .EXE](https://github.com/mk3bomfim/arpanet-suite/releases/latest/download/arpanet.exe) |
+| **Android Mobile** | `arpanet-suite.apk` | [Download .APK](https://github.com/mk3bomfim/arpanet-suite/releases/latest/download/arpanet-suite.apk) |
 
 </div>
 
@@ -36,7 +39,8 @@ O **Arpanet Suite** é uma plataforma de alta performance desenvolvida para audi
 - **Varredura de Rede (ARP Sweep)**: Descoberta instantânea de dispositivos ativos no segmento `/24` ou personalizado com resolução de fabricante/hostname.
 - **ARP Spoofing Bidirecional**: Envenenamento de cache ARP direcionado para análise e intercepção controlada de tráfego.
 - **Isolamento de Alvo (DoS Controlado)**: Interrupção seletiva de tráfego de nós específicos sem IP forwarding.
-- **Derrubar Tudo (Kill All)**: Spoofing massivo simultâneo em broadcast para contenção e testes de resiliência.
+- **Painel Kill All com Timer**: Seleção granular de alvos por checkbox, duração configurável (chips + campo livre) e timer SVG animado com restauração automática da rede.
+- **Gateway Automático**: Detecção dinâmica do IP e gateway sem nenhum valor fixo no código.
 - **Logs e Telemetria em Tempo Real**: Transmissão contínua de eventos via Server-Sent Events (SSE).
 - **Interface Monocromática**: Design puramente preto e branco (#000000 / #ffffff), sem emojis, com animações e adaptação nativa para telas sensíveis ao toque (Mobile M3).
 
@@ -48,23 +52,22 @@ O **Arpanet Suite** é uma plataforma de alta performance desenvolvida para audi
 
 #### Android
 - Android 10+ (API 29 até API 35).
-- Instalação via arquivo `.apk` ou diretamente como WebAPK/PWA pelo navegador apontando para a máquina de auditoria.
+- Instalação via arquivo `.apk` direto da aba [Releases](https://github.com/mk3bomfim/arpanet-suite/releases/latest).
 
 ### Estrutura do Projeto
 ```
 arpanet-suite/
 ├── main.go                     # Ponto de entrada Go (servidor HTTP + WebView2)
-├── internal/
-│   ├── arp/                    # Motor ARP (Scanner, Spoofing, DoS)
-│   ├── iface/                  # Enumeração de NICs e detecção de gateway
-│   ├── mitm/                   # Roteamento de pacotes e inspeção
-│   └── server/                 # API REST e stream SSE
+├── arp.go                      # Motor ARP (Scanner, Spoofing, DoS)
+├── mitm.go                     # Roteamento de pacotes e inspeção
+├── server.go                   # API REST e stream SSE
 ├── ui/                         # Interface frontend pura (HTML, Vanilla CSS, JS)
 │   ├── index.html              # Console de comando monocromático
 │   ├── landing.html            # Landing page com download animado
 │   └── manifest.json           # Manifesto PWA
 ├── android/                    # Projeto nativo Android Capacitor 7
-└── .github/workflows/          # Pipeline de build automatizado na nuvem
+│   └── ui/                     # UI mobile dedicada (Material You)
+└── .github/workflows/          # Pipeline de build + release automatizado
 ```
 
 ### Compilação Local (Opcional)
@@ -95,7 +98,8 @@ cd android
 - **ARP Network Sweep**: Instant host discovery across `/24` or custom subnets with IP, MAC, and vendor mapping.
 - **Bidirectional ARP Spoofing**: Targeted cache poisoning for controlled man-in-the-middle diagnostic inspection.
 - **Controlled Denial of Service (DoS)**: Drop forwarding to isolate specific offending network endpoints.
-- **Network-Wide Kill Switch**: Simultaneous subnet-wide broadcast spoofing for incident containment testing.
+- **Kill All Panel with Timer**: Per-device checkbox selection, configurable block duration (quick chips + custom input), animated SVG countdown ring, and automatic network restore.
+- **Zero-Hardcode Gateway**: Dynamic OS-level IP and gateway detection — no fixed values in code.
 - **Real-Time Telemetry**: Sub-millisecond event streaming via HTTP Server-Sent Events (SSE).
 - **Pure Monochrome Interface**: Black & white design (#000000 / #ffffff), zero emojis, fluid micro-animations, and full mobile touch ergonomics (M3 Bottom Navigation).
 
@@ -107,7 +111,7 @@ cd android
 
 #### Android
 - Android 10+ (API 29 through API 35).
-- Install directly via `arpanet.apk` or add to home screen as WebAPK/PWA.
+- Install directly via `.apk` from the [Releases page](https://github.com/mk3bomfim/arpanet-suite/releases/latest).
 
 ### Build from Source
 
@@ -129,5 +133,5 @@ cd android
 ---
 
 <div align="center">
-<sub>ARPANET SUITE &bull; AUTHORIZED NETWORK AUDITING SUITE &bull; RELEASE V2.0.0</sub>
+<sub>ARPANET SUITE &bull; AUTHORIZED NETWORK AUDITING SUITE &bull; RELEASE V2 &bull; <a href="https://net-nu-one.vercel.app/landing">net-nu-one.vercel.app/landing</a></sub>
 </div>
