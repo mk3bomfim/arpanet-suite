@@ -6,11 +6,14 @@
   "buildCommand": null,
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
+  "redirects": [
     {
       "source": "/",
-      "destination": "/landing.html"
-    },
+      "destination": "/landing",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
     {
       "source": "/app",
       "destination": "/index.html"
