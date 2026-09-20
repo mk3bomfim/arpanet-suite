@@ -1,0 +1,11 @@
+# Ignore Go backend and native binaries on Vercel frontend deployments
+main.go
+go.mod
+go.sum
+rsrc.syso
+internal/
+android/
+android-artifacts/
+*.exe
+*.apk
+*.ico
